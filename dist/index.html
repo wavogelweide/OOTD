@@ -1704,7 +1704,11 @@ const COLOR_PRESETS = [
 
 const PATTERNS = [
   { key: 'solid',      label: 'Uni',         loud: false },
-  { key: 'stripes',    label: 'Streifen',    loud: true  },
+  // Zwei Streifenarten: schräg wie beim Regimentsstreifen, längs wie beim
+  // Nadelstreifen. Die Bezeichnung des bestehenden Musters wurde dafür
+  // von "Streifen" auf "Schrägstreifen" präzisiert; der Schlüssel bleibt.
+  { key: 'stripes',    label: 'Schrägstreifen', loud: true },
+  { key: 'pinstripe',  label: 'Längsstreifen',  loud: true },
   { key: 'argyle',     label: 'Argyle',      loud: true  },
   { key: 'tartan',     label: 'Tartan',      loud: true  },
   { key: 'houndstooth', label: 'Hahnentritt', loud: true },
@@ -1743,7 +1747,7 @@ function computePreppyScore({ subtype = '', name = '', color = '#000000', patter
   if (PREPPY_PATTERN.test(text)) score += 3;
   if (ANTI_PATTERN.test(text)) score -= 2;
   if (isCorePaletteColor(color)) score += 1;
-  if (['argyle', 'tartan', 'stripes', 'cable', 'houndstooth'].includes(pattern)) score += 1;
+  if (['argyle', 'tartan', 'stripes', 'pinstripe', 'cable', 'houndstooth'].includes(pattern)) score += 1;
 
   return Math.max(0, Math.min(10, score));
 }
@@ -2577,6 +2581,14 @@ function patternTile(kind, ink) {
         transform: 'rotate(45)',
         content: `<rect x="0" y="0" width="4.5" height="12" fill="${ink}"/>`,
       };
+    case 'pinstripe':
+      // Senkrechte Bahnen, ohne Drehung – im Nutzerkoordinatensystem des
+      // Kleidungsstücks, damit sie auf allen Formen gleich breit laufen.
+      return {
+        size: 11,
+        transform: '',
+        content: `<rect x="0" y="0" width="4" height="11" fill="${ink}"/>`,
+      };
     case 'argyle':
       return {
         size: 26,
@@ -2731,8 +2743,8 @@ const SEED_GARMENTS = [
     color: '#C19A6B', pattern: 'solid', patternColor: null, formality: 2, warmth: 2 },
   { name: 'Chino Navy', category: 'bottom', subtype: 'Chino',
     color: '#22334E', pattern: 'solid', patternColor: null, formality: 2, warmth: 2 },
-  { name: 'Anzughose Grau', category: 'bottom', subtype: 'Anzughose',
-    color: '#8C8C88', pattern: 'solid', patternColor: null, formality: 3, warmth: 2 },
+  { name: 'Anzughose mit Längsstreifen', category: 'bottom', subtype: 'Anzughose',
+    color: '#8C8C88', pattern: 'pinstripe', patternColor: '#F2E9DC', formality: 3, warmth: 2 },
   { name: 'Faltenrock Tartan', category: 'bottom', subtype: 'Faltenrock',
     color: '#7A2E2E', pattern: 'tartan', patternColor: '#22334E', formality: 2, warmth: 2 },
   { name: 'Tennisrock Weiß', category: 'bottom', subtype: 'Tennisrock',

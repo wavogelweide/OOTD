@@ -87,7 +87,7 @@ Die Spannung auflösen: **Layout und Interaktion verspielt** (weiche Formen, Mic
   subtype: string,                   // aus Vorschlagsliste je Kategorie, s. §4.1
   color: "#RRGGBB",                  // via Farb-Picker + benannte Presets
   colorName: "Burgunderrot",         // automatisch aus Preset oder "Eigene Farbe"
-  pattern: "solid" | "stripes" | "argyle" | "houndstooth" | "tartan" | "polkadot" | "cable",
+  pattern: "solid" | "stripes" | "pinstripe" | "argyle" | "houndstooth" | "tartan" | "polkadot" | "cable",
   patternColor: "#RRGGBB" | null,    // Zweitfarbe des Musters, null bei solid
   formality: 1 | 2 | 3,              // 1 = leger, 2 = smart casual, 3 = formell
   warmth: 1 | 2 | 3,                 // 1 = luftig, 2 = mittel, 3 = warm

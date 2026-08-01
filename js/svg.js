@@ -341,6 +341,14 @@ function patternTile(kind, ink) {
         transform: 'rotate(45)',
         content: `<rect x="0" y="0" width="4.5" height="12" fill="${ink}"/>`,
       };
+    case 'pinstripe':
+      // Senkrechte Bahnen, ohne Drehung – im Nutzerkoordinatensystem des
+      // Kleidungsstücks, damit sie auf allen Formen gleich breit laufen.
+      return {
+        size: 11,
+        transform: '',
+        content: `<rect x="0" y="0" width="4" height="11" fill="${ink}"/>`,
+      };
     case 'argyle':
       return {
         size: 26,

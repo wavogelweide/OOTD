@@ -31,5 +31,6 @@ function block(title, cls, mk){
 document.getElementById('out').innerHTML =
   block('Groß – uni','', (c,s)=>S({category:c,subtype:s,color:colors[c]})) +
   block('Klein (78px, wie in der App)','small',(c,s)=>S({category:c,subtype:s,color:colors[c]})) +
-  block('Mit Tartan-Muster','',(c,s)=>S({category:c,subtype:s,color:colors[c],pattern:'tartan',patternColor:'#F2E9DC'}));
+  block('Mit Tartan-Muster','',(c,s)=>S({category:c,subtype:s,color:colors[c],pattern:'tartan',patternColor:'#F2E9DC'})) +
+  block('Mit Längsstreifen','',(c,s)=>S({category:c,subtype:s,color:colors[c],pattern:'pinstripe',patternColor:'#F2E9DC'}));
 </script>

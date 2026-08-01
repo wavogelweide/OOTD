@@ -55,7 +55,11 @@ export const COLOR_PRESETS = [
 
 export const PATTERNS = [
   { key: 'solid',      label: 'Uni',         loud: false },
-  { key: 'stripes',    label: 'Streifen',    loud: true  },
+  // Zwei Streifenarten: schräg wie beim Regimentsstreifen, längs wie beim
+  // Nadelstreifen. Die Bezeichnung des bestehenden Musters wurde dafür
+  // von "Streifen" auf "Schrägstreifen" präzisiert; der Schlüssel bleibt.
+  { key: 'stripes',    label: 'Schrägstreifen', loud: true },
+  { key: 'pinstripe',  label: 'Längsstreifen',  loud: true },
   { key: 'argyle',     label: 'Argyle',      loud: true  },
   { key: 'tartan',     label: 'Tartan',      loud: true  },
   { key: 'houndstooth', label: 'Hahnentritt', loud: true },
@@ -94,7 +98,7 @@ export function computePreppyScore({ subtype = '', name = '', color = '#000000',
   if (PREPPY_PATTERN.test(text)) score += 3;
   if (ANTI_PATTERN.test(text)) score -= 2;
   if (isCorePaletteColor(color)) score += 1;
-  if (['argyle', 'tartan', 'stripes', 'cable', 'houndstooth'].includes(pattern)) score += 1;
+  if (['argyle', 'tartan', 'stripes', 'pinstripe', 'cable', 'houndstooth'].includes(pattern)) score += 1;
 
   return Math.max(0, Math.min(10, score));
 }
