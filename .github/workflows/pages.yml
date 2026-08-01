@@ -41,8 +41,12 @@ jobs:
           ls -R _site
 
       - name: Pages einrichten
-        # enablement aktiviert GitHub Pages beim ersten Lauf selbst,
-        # damit dafür kein manueller Schritt in den Repo-Einstellungen nötig ist.
+        # enablement versucht, GitHub Pages selbst zu aktivieren. Ob das klappt,
+        # hängt von den Rechten des GITHUB_TOKEN ab; fehlen sie, bricht der Lauf
+        # mit "Create Pages site failed: Resource not accessible by integration"
+        # ab. Dann Pages einmalig von Hand einschalten:
+        # Settings -> Pages -> Source: "GitHub Actions". Danach läuft alles
+        # automatisch, weil dieser Schritt die bestehende Seite nur noch liest.
         uses: actions/configure-pages@v5
         with:
           enablement: true
