@@ -9,7 +9,10 @@ import {
   CATEGORIES, CATEGORY_BY_KEY, SUBTYPES, COLOR_PRESETS, PATTERNS,
   FORMALITY_LABELS, WARMTH_LABELS, colorNameFor,
 } from './catalog.js';
-import * as store from './store.js';
+import {
+  getGarments, getGarment, addGarment, updateGarment, removeGarment,
+  replaceGarments, isPersistent,
+} from './store.js';
 import { garmentSvg, patternSwatch } from './svg.js';
 import { SEED_GARMENTS } from './seed-data.js';
 
@@ -106,7 +109,7 @@ function garmentCard(garment) {
 }
 
 export function renderWardrobe() {
-  const all = store.getGarments();
+  const all = getGarments();
   const visible = currentFilter === 'all' ? all : all.filter((g) => g.category === currentFilter);
 
   dom.grid.innerHTML = visible.map(garmentCard).join('');
@@ -279,10 +282,10 @@ function saveFromForm() {
   if (!data.name) return;
 
   if (editingId) {
-    store.updateGarment(editingId, data);
+    updateGarment(editingId, data);
     toast('Änderungen gesichert');
   } else {
-    store.addGarment(data);
+    addGarment(data);
     toast(`„${data.name}“ hinzugefügt`);
   }
   editingId = null;
@@ -363,7 +366,7 @@ export function initUI() {
   el('btn-add-first').addEventListener('click', () => openDialog());
 
   el('btn-load-seed').addEventListener('click', () => {
-    store.replaceGarments(SEED_GARMENTS);
+    replaceGarments(SEED_GARMENTS);
     renderWardrobe();
     toast('Beispiel-Garderobe geladen');
   });
@@ -373,13 +376,13 @@ export function initUI() {
     const button = event.target.closest('[data-action]');
     if (!button) return;
     const id = button.closest('.garment').dataset.id;
-    const garment = store.getGarment(id);
+    const garment = getGarment(id);
     if (!garment) return;
 
     if (button.dataset.action === 'edit') {
       openDialog(garment);
     } else if (await confirmDelete(garment.name)) {
-      store.removeGarment(id);
+      removeGarment(id);
       renderWardrobe();
       toast(`„${garment.name}“ entfernt`);
     }
@@ -396,7 +399,7 @@ export function initUI() {
     });
   }
 
-  if (!store.isPersistent()) {
+  if (!isPersistent()) {
     toast('Speichern nicht möglich – Daten gelten nur für diese Sitzung');
   }
 

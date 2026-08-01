@@ -1,0 +1,5 @@
+
+# Build-Artefakte des Standalone-Builds werden bewusst versioniert (dist/),
+# lokale Testdateien nicht.
+.wrapped-test.html
+node_modules/
