@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OOTD – Tests</title>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      margin: 0; padding: 2rem 1.25rem;
+      font: 16px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #1F2A24; background: #F7F3EB;
+    }
+    main { max-width: 780px; margin-inline: auto; }
+    h1 { font-size: 1.4rem; margin: 0 0 .3rem; }
+    .sub { color: #7C857F; margin: 0 0 1.5rem; font-size: .85rem; }
+    #summary {
+      padding: .9rem 1.1rem; border-radius: 12px; margin-bottom: 1.5rem;
+      font-weight: 700; border: 1px solid;
+    }
+    .ok   { background: #E8F0E6; border-color: #2E4B3C; color: #233A2E; }
+    .fail { background: #F6E3E3; border-color: #7A2E2E; color: #7A2E2E; }
+    h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .12em;
+         color: #B08D3E; margin: 1.6rem 0 .5rem; }
+    ul { list-style: none; padding: 0; margin: 0; display: grid; gap: .3rem; }
+    li { padding: .5rem .75rem; border-radius: 8px; background: #FFFDF7;
+         border: 1px solid #E2D9C9; font-size: .85rem; }
+    li.f { background: #FDF4F4; border-color: #D9AFAF; }
+    li .mark { font-weight: 700; margin-right: .5rem; }
+    li.p .mark { color: #2E4B3C; }
+    li.f .mark { color: #7A2E2E; }
+    .detail { display: block; margin-top: .3rem; color: #7A2E2E; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>OOTD – Engine-Tests</h1>
+    <p class="sub">Ohne Abhängigkeiten, direkt im Browser. Datei über einen lokalen Webserver öffnen.</p>
+    <div id="summary">läuft …</div>
+    <div id="results"></div>
+  </main>
+
+  <script type="module">
+    import { hexToHsl, hexToRgb, shade, luminance } from './js/color.js';
+    import { computePreppyScore, colorNameFor } from './js/catalog.js';
+    import {
+      isNeutral, hueDistance, scoreColors, scorePatterns, scoreFormality,
+      scorePreppy, scoreOutfit, toStars, generateOutfit, missingPieces,
+      seededRandom, hashString, dateKey, explain,
+    } from './js/engine.js';
+    import { shapeFor, garmentSvg } from './js/svg.js';
+
+    /* --- Mini-Testrunner ------------------------------------------------ */
+    const groups = [];
+    let current = null;
+    const describe = (name, fn) => { current = { name, tests: [] }; groups.push(current); fn(); };
+    const it = (name, fn) => {
+      try { fn(); current.tests.push({ name, pass: true }); }
+      catch (error) { current.tests.push({ name, pass: false, detail: error.message }); }
+    };
+
+    function assert(condition, message) {
+      if (!condition) throw new Error(message || 'Erwartung nicht erfüllt');
+    }
+    function equal(actual, expected, message) {
+      const a = JSON.stringify(actual), e = JSON.stringify(expected);
+      if (a !== e) throw new Error(`${message || 'ungleich'}\n  erwartet: ${e}\n  war:      ${a}`);
+    }
+    function near(actual, expected, tolerance, message) {
+      if (Math.abs(actual - expected) > tolerance) {
+        throw new Error(`${message || 'außerhalb der Toleranz'}\n  erwartet: ${expected} ±${tolerance}\n  war:      ${actual}`);
+      }
+    }
+
+    /* --- Hilfsdaten ------------------------------------------------------ */
+    let counter = 0;
+    const make = (over = {}) => ({
+      id: `t${counter += 1}`, name: 'Teil', category: 'top', subtype: '',
+      color: '#FAFAF7', colorName: 'Weiß', pattern: 'solid', patternColor: null,
+      formality: 2, warmth: 2, preppyScore: 5, ...over,
+    });
+
+    /* --- Farb-Utilities -------------------------------------------------- */
+    describe('color.js', () => {
+      it('hexToRgb liest Kurz- und Langform', () => {
+        equal(hexToRgb('#FFFFFF'), { r: 255, g: 255, b: 255 });
+        equal(hexToRgb('#000'), { r: 0, g: 0, b: 0 });
+        equal(hexToRgb('#22334E'), { r: 34, g: 51, b: 78 });
+      });
+      it('hexToHsl trifft die Grundfarben', () => {
+        const red = hexToHsl('#FF0000');
+        near(red.h, 0, 0.5, 'Rot-Ton'); near(red.s, 1, 0.01, 'Sättigung'); near(red.l, 0.5, 0.01, 'Helligkeit');
+        const green = hexToHsl('#00FF00');
+        near(green.h, 120, 0.5, 'Grün-Ton');
+        const blue = hexToHsl('#0000FF');
+        near(blue.h, 240, 0.5, 'Blau-Ton');
+      });
+      it('hexToHsl erkennt Unbuntes', () => {
+        near(hexToHsl('#808080').s, 0, 0.01, 'Grau ist ungesättigt');
+      });
+      it('shade hellt auf und dunkelt ab', () => {
+        assert(luminance(shade('#2E4B3C', 0.5)) > luminance('#2E4B3C'), 'aufhellen');
+        assert(luminance(shade('#C19A6B', -0.5)) < luminance('#C19A6B'), 'abdunkeln');
+      });
+      it('colorNameFor findet den Preset-Namen', () => {
+        equal(colorNameFor('#22334E'), 'Navy');
+        equal(colorNameFor('#FF00FF'), 'Eigene Farbe');
+      });
+    });
+
+    /* --- Neutral-Erkennung ----------------------------------------------- */
+    describe('Neutral-Erkennung', () => {
+      it('Unbuntes gilt als neutral', () => {
+        for (const hex of ['#FAFAF7', '#F2E9DC', '#8C8C88', '#23211E', '#D6C7A9']) {
+          assert(isNeutral(hex), `${hex} sollte neutral sein`);
+        }
+      });
+      it('helle Töne trotz hoher HSL-Sättigung neutral', () => {
+        // Creme kommt auf eine Sättigung von 0,46 – nur die Buntheit (0,09)
+        // bildet den optischen Eindruck richtig ab.
+        assert(hexToHsl('#F2E9DC').s > 0.4, 'Vorbedingung: hohe HSL-Sättigung');
+        assert(isNeutral('#F2E9DC'), 'Creme sollte trotzdem neutral sein');
+      });
+      it('Navy, Braun und Racing Green gelten als Basis', () => {
+        assert(isNeutral('#22334E'), 'Navy');
+        assert(isNeutral('#5B4636'), 'Braun');
+        assert(isNeutral('#2E4B3C'), 'Racing Green');
+        assert(isNeutral('#3E5573'), 'Denim');
+      });
+      it('Hellblau und Salbei zählen zur Basis, nicht zum Akzent', () => {
+        // Ein hellblaues Oxford-Hemd zu Camel-Chino soll nicht als
+        // "zwei Akzente" durchfallen – beides sind Basistöne des Stils.
+        assert(isNeutral('#A8C3D7'), 'Hellblau');
+        assert(isNeutral('#9CAF88'), 'Salbei');
+      });
+      it('kräftige Farben sind Akzente', () => {
+        for (const hex of ['#C9A227', '#7A2E2E', '#8E3B46', '#C19A6B']) {
+          assert(!isNeutral(hex), `${hex} sollte ein Akzent sein`);
+        }
+      });
+      it('hueDistance rechnet über den Nullpunkt', () => {
+        equal(hueDistance(350, 10), 20);
+        equal(hueDistance(10, 350), 20);
+        equal(hueDistance(0, 180), 180);
+        equal(hueDistance(0, 190), 170);
+      });
+    });
+
+    /* --- Musterdisziplin -------------------------------------------------- */
+    describe('Musterdisziplin', () => {
+      it('genau ein lautes Muster ist ideal', () => {
+        const items = [make({ pattern: 'argyle' }), make({ pattern: 'solid' }), make({ pattern: 'solid' })];
+        equal(scorePatterns(items).score, 100);
+      });
+      it('zwei laute Muster werden deutlich abgestraft', () => {
+        const items = [make({ pattern: 'argyle' }), make({ pattern: 'tartan' }), make({ pattern: 'solid' })];
+        const score = scorePatterns(items).score;
+        assert(score <= 50, `erwartet <= 50, war ${score}`);
+      });
+      it('drei laute Muster fallen noch weiter ab', () => {
+        const items = [make({ pattern: 'argyle' }), make({ pattern: 'tartan' }), make({ pattern: 'polkadot' })];
+        assert(scorePatterns(items).score < scorePatterns([make({ pattern: 'argyle' }), make({ pattern: 'tartan' })]).score);
+      });
+      it('Zopfstrick zählt als ruhig', () => {
+        const items = [make({ pattern: 'cable' }), make({ pattern: 'argyle' })];
+        equal(scorePatterns(items).score, 100, 'cable darf den einen Akzent nicht verbrauchen');
+      });
+    });
+
+    /* --- Formalität ------------------------------------------------------- */
+    describe('Formalitäts-Kohärenz', () => {
+      it('gleiche Stufe gibt die volle Wertung', () => {
+        equal(scoreFormality([make({ formality: 2 }), make({ formality: 2 })]).score, 100);
+      });
+      it('eine Stufe Abstand ist noch gut', () => {
+        const r = scoreFormality([make({ formality: 2 }), make({ formality: 3 })]);
+        equal(r.spread, 1);
+        assert(r.score >= 80 && r.score < 100, `war ${r.score}`);
+      });
+      it('zwei Stufen Abstand werden abgestraft', () => {
+        const r = scoreFormality([make({ formality: 1 }), make({ formality: 3 })]);
+        equal(r.spread, 2);
+        assert(r.score <= 50, `erwartet <= 50, war ${r.score}`);
+      });
+    });
+
+    /* --- Farbharmonie ------------------------------------------------------ */
+    describe('Farbharmonie', () => {
+      it('neutrale Basis mit einem Akzent ist das Optimum', () => {
+        const items = [
+          make({ category: 'top', color: '#7A2E2E' }),
+          make({ category: 'bottom', color: '#F2E9DC' }),
+          make({ category: 'shoes', color: '#5B4636' }),
+        ];
+        const r = scoreColors(items);
+        equal(r.accents.length, 1);
+        assert(r.score >= 95, `erwartet >= 95, war ${r.score}`);
+      });
+      it('viele Akzente kosten Punkte', () => {
+        const few = scoreColors([
+          make({ category: 'top', color: '#7A2E2E' }),
+          make({ category: 'bottom', color: '#F2E9DC' }),
+        ]).score;
+        const many = scoreColors([
+          make({ category: 'top', color: '#7A2E2E' }),
+          make({ category: 'bottom', color: '#C9A227' }),
+          make({ category: 'shoes', color: '#A8C3D7' }),
+          make({ category: 'outer', color: '#9CAF88' }),
+        ]).score;
+        assert(many < few, `viele (${many}) sollte unter wenig (${few}) liegen`);
+      });
+      it('Ton-in-Ton bei Ober- und Unterteil kostet einen kleinen Abzug', () => {
+        const contrast = scoreColors([
+          make({ category: 'top', color: '#FAFAF7' }),
+          make({ category: 'bottom', color: '#23211E' }),
+        ]).score;
+        const flat = scoreColors([
+          make({ category: 'top', color: '#8C8C88' }),
+          make({ category: 'bottom', color: '#8C8C88' }),
+        ]).score;
+        assert(contrast > flat, `Kontrast (${contrast}) sollte über Ton-in-Ton (${flat}) liegen`);
+      });
+      it('Wertung bleibt im Bereich 0–100', () => {
+        for (const items of [
+          [make({ color: '#FF0000' }), make({ color: '#00FF00' }), make({ color: '#0000FF' }), make({ color: '#FFFF00' })],
+          [make({ color: '#FAFAF7' })],
+        ]) {
+          const s = scoreColors(items).score;
+          assert(s >= 0 && s <= 100, `außerhalb: ${s}`);
+        }
+      });
+    });
+
+    /* --- Preppy-Score ------------------------------------------------------ */
+    describe('Preppy-Score', () => {
+      it('Kanon-Teile liegen über dem Grundwert', () => {
+        const loafer = computePreppyScore({ subtype: 'Penny-Loafer', color: '#5B4636', pattern: 'solid' });
+        assert(loafer > 5, `war ${loafer}`);
+      });
+      it('Anti-Teile liegen darunter', () => {
+        const jogger = computePreppyScore({ subtype: 'Jogginghose', name: '', color: '#FF00FF', pattern: 'solid' });
+        assert(jogger < 5, `war ${jogger}`);
+      });
+      it('Ergebnis bleibt zwischen 0 und 10', () => {
+        const high = computePreppyScore({ subtype: 'Tweed-Blazer Oxford Loafer', color: '#22334E', pattern: 'argyle' });
+        assert(high <= 10, `war ${high}`);
+        assert(computePreppyScore({ subtype: 'Jogginghose Hoodie Cap', color: '#FF00FF', pattern: 'solid' }) >= 0);
+      });
+      it('scorePreppy normiert auf 0–100', () => {
+        equal(scorePreppy([make({ preppyScore: 10 })]).score, 100);
+        equal(scorePreppy([make({ preppyScore: 0 })]).score, 0);
+      });
+    });
+
+    /* --- Gesamtwertung ------------------------------------------------------ */
+    describe('Gesamtwertung', () => {
+      it('ein stimmiges Outfit schlägt ein unstimmiges', () => {
+        const good = scoreOutfit([
+          make({ category: 'top', color: '#F2E9DC', pattern: 'solid', formality: 2, preppyScore: 9 }),
+          make({ category: 'bottom', color: '#22334E', pattern: 'solid', formality: 2, preppyScore: 9 }),
+          make({ category: 'shoes', color: '#5B4636', pattern: 'solid', formality: 2, preppyScore: 9 }),
+        ]).total;
+        const bad = scoreOutfit([
+          make({ category: 'top', color: '#C9A227', pattern: 'tartan', formality: 1, preppyScore: 2 }),
+          make({ category: 'bottom', color: '#00FF00', pattern: 'polkadot', formality: 3, preppyScore: 2 }),
+          make({ category: 'shoes', color: '#FF00FF', pattern: 'argyle', formality: 1, preppyScore: 2 }),
+        ]).total;
+        assert(good > bad, `gut (${good}) sollte über schlecht (${bad}) liegen`);
+      });
+      it('Sterne liegen zwischen 1 und 5', () => {
+        for (const value of [0, 12, 50, 79, 100]) {
+          const stars = toStars(value);
+          assert(stars >= 1 && stars <= 5, `${value} ergab ${stars}`);
+        }
+        equal(toStars(100), 5);
+      });
+    });
+
+    /* --- Zufall mit Seed ----------------------------------------------------- */
+    describe('Seed-Zufall', () => {
+      it('gleicher Seed liefert gleiche Folge', () => {
+        const a = seededRandom('2026-08-01#0');
+        const b = seededRandom('2026-08-01#0');
+        equal([a(), a(), a()], [b(), b(), b()]);
+      });
+      it('anderer Seed liefert andere Folge', () => {
+        const a = seededRandom('2026-08-01#0');
+        const b = seededRandom('2026-08-01#1');
+        assert(a() !== b(), 'Folgen sollten sich unterscheiden');
+      });
+      it('Werte liegen in [0, 1)', () => {
+        const rng = seededRandom('probe');
+        for (let i = 0; i < 500; i += 1) {
+          const v = rng();
+          assert(v >= 0 && v < 1, `außerhalb: ${v}`);
+        }
+      });
+      it('hashString ist stabil und streut', () => {
+        equal(hashString('abc'), hashString('abc'));
+        assert(hashString('abc') !== hashString('abd'));
+      });
+      it('dateKey formatiert als YYYY-MM-DD', () => {
+        equal(dateKey(new Date(2026, 7, 1)), '2026-08-01');
+        equal(dateKey(new Date(2026, 11, 31)), '2026-12-31');
+      });
+    });
+
+    /* --- Erzeugung ------------------------------------------------------------ */
+    describe('Outfit-Erzeugung', () => {
+      const trio = () => [
+        make({ category: 'top', name: 'Hemd', color: '#FAFAF7' }),
+        make({ category: 'bottom', name: 'Chino', color: '#C19A6B' }),
+        make({ category: 'shoes', name: 'Loafer', color: '#5B4636' }),
+      ];
+
+      it('leere Garderobe meldet, was fehlt', () => {
+        const result = generateOutfit([], { seed: '2026-08-01' });
+        equal(result.ok, false);
+        assert(result.missing.length > 0, 'es sollten fehlende Teile gemeldet werden');
+      });
+      it('ohne Schuhe kein Vorschlag', () => {
+        const missing = missingPieces([make({ category: 'top' }), make({ category: 'bottom' })]);
+        assert(missing.some((m) => m.includes('Schuhe')), `war: ${missing.join(', ')}`);
+      });
+      it('ein Kleid ersetzt Ober- und Unterteil', () => {
+        equal(missingPieces([make({ category: 'dress' }), make({ category: 'shoes' })]), []);
+      });
+      it('Mini-Garderobe ergibt genau diese drei Teile', () => {
+        const garments = trio();
+        const result = generateOutfit(garments, { seed: '2026-08-01' });
+        equal(result.ok, true);
+        equal(result.items.map((i) => i.id).sort(), garments.map((g) => g.id).sort());
+      });
+      it('gleicher Seed ergibt dasselbe Outfit', () => {
+        const garments = [
+          ...trio(),
+          make({ category: 'top', name: 'Pulli', color: '#2E4B3C' }),
+          make({ category: 'bottom', name: 'Rock', color: '#22334E' }),
+          make({ category: 'outer', name: 'Blazer', color: '#22334E' }),
+          make({ category: 'accessory', name: 'Tuch', color: '#C9A227' }),
+          make({ category: 'shoes', name: 'Sneaker', color: '#FAFAF7' }),
+        ];
+        const a = generateOutfit(garments, { seed: '2026-08-01', salt: 0 });
+        const b = generateOutfit(garments, { seed: '2026-08-01', salt: 0 });
+        equal(a.items.map((i) => i.id), b.items.map((i) => i.id));
+        equal(a.score.total, b.score.total);
+      });
+      it('Neu-Würfeln bringt spürbare Abwechslung', () => {
+        // Schützt die Bedienung: würde immer das strikte Maximum gewinnen,
+        // lieferte der Würfel-Knopf fast immer dasselbe Outfit.
+        const garments = [];
+        for (let i = 0; i < 6; i += 1) {
+          garments.push(make({ category: 'top', color: '#FAFAF7', name: `Top ${i}` }));
+          garments.push(make({ category: 'bottom', color: '#22334E', name: `Hose ${i}` }));
+          garments.push(make({ category: 'shoes', color: '#5B4636', name: `Schuh ${i}` }));
+        }
+        const keys = new Set();
+        for (let salt = 0; salt < 10; salt += 1) {
+          keys.add(generateOutfit(garments, { seed: '2026-08-01', salt }).items.map((i) => i.id).join('|'));
+        }
+        assert(keys.size >= 4, `nur ${keys.size} verschiedene Outfits bei 10 Würfen`);
+      });
+      it('die Spitzengruppe bleibt qualitativ dicht beisammen', () => {
+        const garments = [
+          make({ category: 'top', color: '#F2E9DC', preppyScore: 9 }),
+          make({ category: 'top', color: '#C9A227', preppyScore: 3, pattern: 'polkadot' }),
+          make({ category: 'bottom', color: '#22334E', preppyScore: 9 }),
+          make({ category: 'bottom', color: '#00FF00', preppyScore: 2, pattern: 'tartan' }),
+          make({ category: 'shoes', color: '#5B4636', preppyScore: 9 }),
+        ];
+        for (let salt = 0; salt < 12; salt += 1) {
+          const total = generateOutfit(garments, { seed: 'q', salt }).score.total;
+          assert(total >= 70, `Vorschlag zu schwach: ${total.toFixed(0)}`);
+        }
+      });
+      it('Vorschlag enthält immer Schuhe und eine Basis', () => {
+        const garments = [...trio(), make({ category: 'dress', name: 'Kleid', color: '#22334E' })];
+        for (let salt = 0; salt < 12; salt += 1) {
+          const items = generateOutfit(garments, { seed: 'x', salt }).items;
+          const cats = items.map((i) => i.category);
+          assert(cats.includes('shoes'), 'Schuhe fehlen');
+          assert(cats.includes('dress') || (cats.includes('top') && cats.includes('bottom')),
+            `unvollständig: ${cats.join(', ')}`);
+        }
+      });
+      it('Begründung liefert ein bis zwei Sätze', () => {
+        const result = generateOutfit(trio(), { seed: '2026-08-01' });
+        assert(result.reasons.length >= 1 && result.reasons.length <= 2, `war ${result.reasons.length}`);
+        for (const reason of result.reasons) {
+          assert(typeof reason === 'string' && reason.length > 10, `zu kurz: ${reason}`);
+        }
+      });
+    });
+
+    /* --- Silhouetten ------------------------------------------------------------ */
+    describe('svg.js', () => {
+      it('Subtypen führen zur passenden Form', () => {
+        equal(shapeFor({ category: 'top', subtype: 'Polohemd' }), 'polo');
+        equal(shapeFor({ category: 'top', subtype: 'Oxford-Hemd' }), 'shirt');
+        equal(shapeFor({ category: 'bottom', subtype: 'Faltenrock' }), 'skirt');
+        equal(shapeFor({ category: 'outer', subtype: 'Trenchcoat' }), 'coat');
+        equal(shapeFor({ category: 'shoes', subtype: 'Chelsea Boots' }), 'boot');
+      });
+      it('Bootsschuhe sind Loafer, keine Stiefel', () => {
+        equal(shapeFor({ category: 'shoes', subtype: 'Bootsschuhe' }), 'loafer');
+      });
+      it('unbekannte Subtypen fallen auf die Kategorie zurück', () => {
+        equal(shapeFor({ category: 'bottom', subtype: 'Irgendwas' }), 'trousers');
+        equal(shapeFor({ category: 'top', subtype: '' }), 'sweater');
+      });
+      it('garmentSvg liefert gültiges SVG mit Muster', () => {
+        const svg = garmentSvg(make({ pattern: 'argyle', patternColor: '#D6C7A9' }));
+        assert(svg.startsWith('<svg'), 'beginnt mit <svg');
+        assert(svg.includes('</svg>'), 'wird geschlossen');
+        assert(svg.includes('<pattern'), 'enthält eine Musterdefinition');
+      });
+      it('jede Musterdefinition bekommt eine eigene ID', () => {
+        const a = /id="(p\d+)"/.exec(garmentSvg(make({ pattern: 'tartan' })))[1];
+        const b = /id="(p\d+)"/.exec(garmentSvg(make({ pattern: 'tartan' })))[1];
+        assert(a !== b, 'IDs dürfen sich nicht doppeln');
+      });
+    });
+
+    /* --- Ausgabe ---------------------------------------------------------------- */
+    const results = document.getElementById('results');
+    let passed = 0, failed = 0;
+    for (const group of groups) {
+      const h2 = document.createElement('h2');
+      h2.textContent = group.name;
+      const ul = document.createElement('ul');
+      for (const test of group.tests) {
+        if (test.pass) passed += 1; else failed += 1;
+        const li = document.createElement('li');
+        li.className = test.pass ? 'p' : 'f';
+        li.innerHTML = `<span class="mark">${test.pass ? '✓' : '✕'}</span>${test.name}`;
+        if (!test.pass) {
+          const detail = document.createElement('code');
+          detail.className = 'detail';
+          detail.textContent = test.detail;
+          li.append(detail);
+        }
+        ul.append(li);
+      }
+      results.append(h2, ul);
+    }
+
+    const summary = document.getElementById('summary');
+    summary.className = failed === 0 ? 'ok' : 'fail';
+    summary.textContent = failed === 0
+      ? `Alle ${passed} Tests bestanden.`
+      : `${failed} von ${passed + failed} Tests fehlgeschlagen.`;
+    // Für die Automatisierung auslesbar.
+    window.__testResults = { passed, failed };
+  </script>
+</body>
+</html>

@@ -16,7 +16,7 @@ Die App entsteht in fünf Phasen (siehe [BAUPLAN.md](BAUPLAN.md), §9):
 |---|---|---|
 | 1 | Gerüst und Design-System | ✅ fertig |
 | 2 | Garderobe anlegen, bearbeiten, löschen | ✅ fertig |
-| 3 | Outfit-Engine mit Farbharmonie-Scoring | offen |
+| 3 | Outfit-Engine mit Farbharmonie-Scoring | ✅ fertig |
 | 4 | Tab „Heute“: Vorschlag, Bewertung, Verlauf | offen |
 | 5 | Feinschliff, Barrierefreiheit, Doku | offen |
 
@@ -32,6 +32,9 @@ python3 -m http.server 8000
 # dann http://localhost:8000 öffnen
 ```
 
+Die Engine-Tests laufen ohne Abhängigkeiten im Browser:
+http://localhost:8000/tests.html
+
 ## Aufbau
 
 ```
@@ -39,6 +42,7 @@ index.html          Markup, Tabs, Dialoge, Formularfelder
 css/style.css       Design-System (Farben, Typografie, Komponenten)
 js/color.js         Farbkonvertierung (hex/RGB/HSL), Helligkeit
 js/catalog.js       Kategorien, Subtypen, Farb-/Musterpaletten, Preppy-Score
+js/engine.js        Bewertung und Erzeugung der Outfits, Seed-Zufall
 js/store.js         Persistenz in localStorage, CRUD
 js/svg.js           Silhouetten und Muster als Inline-SVG
 js/ui.js            Garderoben-Grid, Formular, Toasts

@@ -23,6 +23,7 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const MODULES = [
   'js/color.js',
   'js/catalog.js',
+  'js/engine.js',
   'js/store.js',
   'js/svg.js',
   'js/seed-data.js',
