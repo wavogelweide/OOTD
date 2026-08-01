@@ -1,0 +1,57 @@
+name: Deploy to GitHub Pages
+
+# Die App ist eine statische Seite ohne Build-Schritt: index.html, css/ und js/
+# werden unverändert ausgeliefert. Auf einem echten Webserver greift keine
+# strenge CSP, deshalb wird hier die mehrteilige Fassung veröffentlicht und
+# nicht das Standalone-Bundle aus dist/.
+
+on:
+  push:
+    branches: [claude/outfit-suggestion-app-fynd2b]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Parallele Deployments vermeiden, laufende aber zu Ende bringen.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Seite zusammenstellen
+        run: |
+          mkdir -p _site/css _site/js
+          cp index.html _site/
+          cp css/style.css _site/css/
+          cp js/*.js _site/js/
+          # Verhindert, dass GitHub die Dateien durch Jekyll schickt.
+          touch _site/.nojekyll
+          ls -R _site
+
+      - name: Pages einrichten
+        # enablement aktiviert GitHub Pages beim ersten Lauf selbst,
+        # damit dafür kein manueller Schritt in den Repo-Einstellungen nötig ist.
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Artefakt hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4
