@@ -2,9 +2,15 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>OOTD – Dein täglicher Stilbegleiter</title>
   <meta name="description" content="Tägliche Outfit-Vorschläge aus der eigenen Garderobe – farblich abgestimmt im Preppy- und Old-Money-Stil.">
+  <meta name="theme-color" content="#F7F3EB" media="(prefers-color-scheme: light)">
+  <meta name="color-scheme" content="light">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="OOTD">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -39,20 +45,6 @@
           <span class="sticker sticker--3">🏇</span>
         </p>
       </div>
-
-      <nav class="tabs" aria-label="Hauptbereiche">
-        <div class="tabs__list" role="tablist">
-          <button class="tab is-active" role="tab" id="tab-today"
-                  aria-controls="panel-today" aria-selected="true" data-tab="today">
-            <span class="tab__icon" aria-hidden="true">☀️</span>Heute
-          </button>
-          <button class="tab" role="tab" id="tab-wardrobe"
-                  aria-controls="panel-wardrobe" aria-selected="false" tabindex="-1" data-tab="wardrobe">
-            <span class="tab__icon" aria-hidden="true">🧥</span>Garderobe
-          </button>
-          <span class="tabs__pill" aria-hidden="true"></span>
-        </div>
-      </nav>
     </header>
 
     <main class="site-main">
@@ -110,7 +102,6 @@
           <p class="wardrobe__count" id="wardrobe-count">0 Teile</p>
         </div>
 
-        <!-- Wird ab Phase 2 von js/ui.js befüllt -->
         <div class="wardrobe-grid fade-up fade-up--d2" id="wardrobe-grid"></div>
 
         <div class="card card--placeholder empty-state fade-up fade-up--d2" id="wardrobe-empty">
@@ -125,6 +116,12 @@
             <button class="btn btn--ghost" type="button" id="btn-load-seed">Beispiel-Garderobe laden</button>
           </div>
         </div>
+
+        <div class="card card--placeholder empty-state fade-up" id="filter-empty" hidden>
+          <span class="empty-state__icon" aria-hidden="true">🔍</span>
+          <h2 class="empty-state__title">Nichts in dieser Kategorie</h2>
+          <p class="empty-state__text">Hier ist noch nichts abgelegt – Zeit, etwas hinzuzufügen.</p>
+        </div>
       </section>
 
     </main>
@@ -134,27 +131,118 @@
     </footer>
   </div>
 
-  <!-- Schwebender Aktions-Button (ab Phase 2 aktiv) -->
+  <!-- ==================== Navigation (mobil als Bottom-Bar) ==================== -->
+  <nav class="tabs" aria-label="Hauptbereiche">
+    <div class="tabs__list" role="tablist">
+      <button class="tab is-active" role="tab" id="tab-today"
+              aria-controls="panel-today" aria-selected="true" data-tab="today">
+        <span class="tab__icon" aria-hidden="true">☀️</span><span class="tab__text">Heute</span>
+      </button>
+      <button class="tab" role="tab" id="tab-wardrobe"
+              aria-controls="panel-wardrobe" aria-selected="false" tabindex="-1" data-tab="wardrobe">
+        <span class="tab__icon" aria-hidden="true">🧥</span><span class="tab__text">Garderobe</span>
+      </button>
+      <span class="tabs__pill" aria-hidden="true"></span>
+    </div>
+  </nav>
+
+  <!-- Schwebender Aktions-Button -->
   <button class="fab" type="button" id="btn-add-garment" hidden>
     <span class="fab__plus" aria-hidden="true">+</span>
     <span class="fab__label">Teil hinzufügen</span>
   </button>
 
-  <!-- ==================== Dialog (ab Phase 2 verdrahtet) ==================== -->
+  <!-- ==================== Dialog: Kleidungsstück ==================== -->
   <dialog class="modal" id="garment-dialog" aria-labelledby="garment-dialog-title">
     <form method="dialog" class="modal__form" id="garment-form">
       <header class="modal__head">
+        <span class="modal__grabber" aria-hidden="true"></span>
         <h2 class="modal__title" id="garment-dialog-title">Neues Kleidungsstück</h2>
         <button class="icon-btn" type="button" id="btn-close-dialog" aria-label="Dialog schließen">✕</button>
       </header>
-      <div class="modal__body" id="garment-form-body">
-        <!-- Felder folgen in Phase 2 -->
+
+      <div class="modal__body">
+        <div class="form-preview">
+          <div class="form-preview__frame" id="preview-frame"></div>
+          <p class="form-preview__caption" id="preview-caption">Vorschau</p>
+        </div>
+
+        <div class="form-fields">
+          <div class="field">
+            <label class="field__label" for="g-name">Name</label>
+            <input class="input" type="text" id="g-name" name="name" required maxlength="60"
+                   placeholder="z. B. Kaschmirpullover Creme" autocomplete="off" enterkeyhint="done">
+          </div>
+
+          <fieldset class="field">
+            <legend class="field__label">Kategorie</legend>
+            <div class="opt-row" id="g-category"></div>
+          </fieldset>
+
+          <div class="field">
+            <label class="field__label" for="g-subtype">Art</label>
+            <select class="input" id="g-subtype"></select>
+            <input class="input input--tight" type="text" id="g-subtype-custom"
+                   placeholder="Eigene Bezeichnung" maxlength="40" autocomplete="off" hidden>
+          </div>
+
+          <fieldset class="field">
+            <legend class="field__label">Farbe <span class="field__value" id="g-color-name"></span></legend>
+            <div class="color-row" id="g-color"></div>
+            <label class="custom-color">
+              <input type="color" id="g-color-custom" value="#22334E">
+              <span>Eigene Farbe wählen</span>
+            </label>
+          </fieldset>
+
+          <fieldset class="field">
+            <legend class="field__label">Muster</legend>
+            <div class="opt-row opt-row--patterns" id="g-pattern"></div>
+          </fieldset>
+
+          <fieldset class="field" id="g-pattern-color-field" hidden>
+            <legend class="field__label">Musterfarbe</legend>
+            <div class="color-row" id="g-pattern-color"></div>
+            <label class="custom-color">
+              <input type="color" id="g-pattern-color-custom" value="#F2E9DC">
+              <span>Eigene Farbe wählen</span>
+            </label>
+          </fieldset>
+
+          <fieldset class="field">
+            <legend class="field__label">Anlass</legend>
+            <div class="segmented" id="g-formality"></div>
+          </fieldset>
+
+          <div class="field">
+            <label class="field__label" for="g-warmth">
+              Wärme <span class="field__value" id="g-warmth-out">Mittel</span>
+            </label>
+            <input class="range" type="range" id="g-warmth" min="1" max="3" step="1" value="2">
+            <div class="range__ticks" aria-hidden="true"><span>Luftig</span><span>Mittel</span><span>Warm</span></div>
+          </div>
+        </div>
       </div>
+
       <footer class="modal__foot">
         <button class="btn btn--ghost" type="button" id="btn-cancel-dialog">Abbrechen</button>
-        <button class="btn btn--primary" type="submit">Speichern</button>
+        <button class="btn btn--primary" type="submit" id="btn-save-garment">Speichern</button>
       </footer>
     </form>
+  </dialog>
+
+  <!-- ==================== Dialog: Bestätigung ==================== -->
+  <dialog class="modal modal--confirm" id="confirm-dialog" aria-labelledby="confirm-title">
+    <div class="modal__form">
+      <div class="modal__body modal__body--plain">
+        <h2 class="modal__title" id="confirm-title">Wirklich löschen?</h2>
+        <p class="modal__text" id="confirm-text"></p>
+      </div>
+      <footer class="modal__foot">
+        <button class="btn btn--ghost" type="button" data-confirm="no">Abbrechen</button>
+        <button class="btn btn--danger" type="button" data-confirm="yes">Löschen</button>
+      </footer>
+    </div>
   </dialog>
 
   <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>

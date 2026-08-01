@@ -1,8 +1,8 @@
 /**
  * OOTD – Bootstrap und Tab-Routing.
- *
- * Ab Phase 2 kommen hier die Aufrufe von store.js und ui.js dazu.
  */
+
+import { initUI, renderWardrobe } from './ui.js';
 
 const tabs = Array.from(document.querySelectorAll('.tab'));
 const pill = document.querySelector('.tabs__pill');
@@ -30,17 +30,18 @@ function activateTab(name, { focus = false } = {}) {
     panel.hidden = !isActive;
     if (isActive) {
       // Einblend-Animationen bei jedem Wechsel neu abspielen.
-      for (const el of panel.querySelectorAll('.fade-up')) {
-        el.style.animation = 'none';
-        void el.offsetWidth;
-        el.style.animation = '';
+      for (const node of panel.querySelectorAll('.fade-up')) {
+        node.style.animation = 'none';
+        void node.offsetWidth;
+        node.style.animation = '';
       }
     }
   }
 
   movePill(tab);
   if (focus) tab.focus();
-  document.getElementById('btn-add-garment').hidden = name !== 'wardrobe';
+  renderWardrobe();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 for (const tab of tabs) {
@@ -49,8 +50,7 @@ for (const tab of tabs) {
 
 // Pfeiltasten-Navigation zwischen den Tabs (WAI-ARIA Tabs-Pattern).
 document.querySelector('.tabs__list')?.addEventListener('keydown', (event) => {
-  const keys = { ArrowRight: 1, ArrowLeft: -1 };
-  const step = keys[event.key];
+  const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
   if (!step) return;
   event.preventDefault();
   const current = tabs.findIndex((t) => t.classList.contains('is-active'));
@@ -65,14 +65,13 @@ for (const link of document.querySelectorAll('[data-goto-tab]')) {
 
 /** Datum ausgeschrieben in den Kopf des Heute-Tabs schreiben. */
 function renderTodayDate() {
-  const el = document.getElementById('today-date');
-  if (!el) return;
-  el.textContent = new Date().toLocaleDateString('de-DE', {
+  const node = document.getElementById('today-date');
+  if (!node) return;
+  node.textContent = new Date().toLocaleDateString('de-DE', {
     weekday: 'long', day: 'numeric', month: 'long',
   });
 }
 
-// Die Pille kennt ihre Breite erst, wenn die Schriften geladen sind.
 function syncPill() {
   movePill(tabs.find((t) => t.classList.contains('is-active')));
 }
@@ -81,4 +80,5 @@ window.addEventListener('resize', syncPill);
 document.fonts?.ready.then(syncPill);
 
 renderTodayDate();
+initUI();
 activateTab('today');

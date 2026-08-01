@@ -160,6 +160,17 @@ Die Engine liefert zum Outfit 1–2 generierte Sätze ("Warum das funktioniert")
 
 ## 6. UI / Seitenstruktur (Single Page, Tab-Navigation)
 
+**Mobile first.** Die App wird überwiegend am Handy benutzt, deshalb gilt:
+
+- Navigation als **fixierte Bottom-Bar** in Daumenreichweite (ab 641 px als schwebende Pille mittig unten).
+- Dialoge sind auf dem Handy **Bottom-Sheets** (von unten einfahrend, Griff-Indikator, Vollbreite,
+  Aktionsbuttons als volle Zeile); ab Tablet klassisch zentriert.
+- Alle Tippziele ≥ 44 px, Formularfelder mit `font-size: 16px` (verhindert iOS-Auto-Zoom).
+- `viewport-fit=cover` plus `env(safe-area-inset-*)` für Geräte mit Notch/Home-Indikator.
+- Filter-Chips horizontal scrollbar statt umbrechend; Garderobe-Grid ab 360 px zweispaltig.
+- Karten-Aktionen (Bearbeiten/Löschen) auf Touchgeräten dauerhaft sichtbar, nicht hinter Hover versteckt.
+- Kein Auto-Fokus auf Textfelder beim Öffnen des Sheets, damit die Tastatur nicht sofort aufspringt.
+
 ### 6.1 Header
 Wappen-Logo (SVG-Monogramm), Titel "OOTD", Untertitel "Dein täglicher Stilbegleiter". Tabs: **Heute** · **Garderobe**.
 
@@ -189,18 +200,26 @@ Wappen-Logo (SVG-Monogramm), Titel "OOTD", Untertitel "Dein täglicher Stilbegle
 ## 7. Dateistruktur & Modulverantwortung
 
 ```
-index.html          – Markup-Gerüst, Tabs, Dialog, Templates
+index.html          – Markup-Gerüst, Tabs, Dialoge, Formularfelder
 css/style.css       – komplettes Design-System (§3)
-js/app.js           – Bootstrap, Tab-Routing, Event-Wiring
+js/app.js           – Bootstrap, Tab-Routing
+js/color.js         – Farbkonvertierung (hex↔RGB↔HSL), Helligkeit, Aufhellen/Abdunkeln
+js/catalog.js       – Taxonomie: Kategorien, Subtypen, Farb-/Musterpaletten, Preppy-Score (§5.4)
 js/store.js         – load/save/migrate localStorage, CRUD für garments/history
-js/engine.js        – Farb-Utils (hex↔HSL), Scoring, Generator, Seed-PRNG, Begründungen (pure functions)
-js/svg.js           – Silhouetten- und Pattern-Erzeugung (gibt SVG-Strings/Nodes zurück)
+js/engine.js        – Scoring, Generator, Seed-PRNG, Begründungen (pure functions)
+js/svg.js           – Silhouetten- und Pattern-Erzeugung (gibt SVG-Strings zurück)
 js/ui.js            – Rendering von Heute-Tab, Garderobe-Grid, Formular-Logik, Toasts
 js/seed-data.js     – Starter-Garderobe
 tests.html          – Mini-Testrunner (siehe §8)
 ```
 
-Keine zyklischen Imports: `app → ui → (store, engine, svg)`; `engine` und `svg` importieren nichts App-eigenes.
+Keine zyklischen Imports: `app → ui → (store, catalog, svg, seed-data)`;
+`store → catalog → color`; `svg → color`; `engine → (color, catalog)`.
+`color`, `catalog`, `engine` und `svg` fassen kein DOM an.
+
+> Abweichung gegenüber der ersten Fassung: Farb-Utilities und Taxonomie liegen in
+> eigenen Modulen (`color.js`, `catalog.js`), weil `svg.js` und `store.js` sie schon
+> in Phase 2 brauchen – also bevor `engine.js` existiert.
 
 ---
 
