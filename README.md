@@ -66,6 +66,27 @@ Gewürfelt wird nicht das strikte Maximum, sondern gleichverteilt aus der
 Spitzengruppe aller Kandidaten, die höchstens acht Punkte darunter liegen –
 sonst käme bei jedem Würfeln fast immer dasselbe Outfit heraus.
 
+## Die Silhouetten
+
+Die Kleidungsstücke sind keine Fotos, sondern 21 selbst gezeichnete
+SVG-Silhouetten, die aus dem Subtyp erkannt und in der Farbe des Teils
+eingefärbt werden; das Muster liegt als SVG-Pattern darüber.
+
+Fertige Icon-Sätze aus dem Netz wurden geprüft und verworfen. Bei
+Phosphor Icons fehlen ausgerechnet Rock, Blazer, Mantel und Loafer –
+also die Kernstücke des Stils. Bei game-icons.net ist die Detailzeichnung
+als Aussparung angelegt: Sobald ein Muster über der Fläche liegt, füllt
+es Kragen und Nähte mit und die Form zerfällt. Eigene Silhouetten zeichnen
+ihre Details als Linien über der Fläche und bleiben deshalb auch mit
+Tartan oder Argyle lesbar.
+
+Flache Formen – Schuhe, Gürtel, Kette, Cap – haben einen eigenen
+Bildausschnitt (`box`), damit sie den Rahmen füllen und nicht im
+hochformatigen Standardrahmen verloren wirken.
+
+Zum Prüfen und Weiterentwickeln dient `icons-preview.html`: die Seite
+zeigt alle Formen groß, in App-Größe und mit Muster nebeneinander.
+
 ## Barrierefreiheit
 
 - Alle Textfarben erreichen mindestens 4,5:1 Kontrast (WCAG AA, Kleintext);
@@ -104,6 +125,8 @@ js/svg.js           Silhouetten und Muster als Inline-SVG
 js/ui.js            Garderoben-Grid, Formular, Toasts
 js/app.js           Bootstrap und Tab-Routing
 js/seed-data.js     Kuratierte Beispiel-Garderobe
+tests.html          Testrunner für die Engine
+icons-preview.html  Werkbank: alle Silhouetten groß, klein und mit Muster
 ```
 
 ## Veröffentlichen
@@ -111,12 +134,11 @@ js/seed-data.js     Kuratierte Beispiel-Garderobe
 Jeder Push auf den Branch veröffentlicht die Seite über GitHub Pages
 (`.github/workflows/pages.yml`).
 
-**Einmalig nötig:** GitHub Pages muss in den Repo-Einstellungen eingeschaltet
-werden – **Settings → Pages → Source: „GitHub Actions"**. Der Workflow versucht
-das zwar selbst, das `GITHUB_TOKEN` darf eine Pages-Seite aber nicht anlegen
-(`Resource not accessible by integration`). Nach dem Einschalten genügt ein
-erneuter Lauf des Workflows (Actions → „Deploy to GitHub Pages" → *Re-run all
-jobs*), danach passiert alles automatisch bei jedem Push.
+Pages ist eingerichtet (Source: „GitHub Actions"), der Ablauf läuft ohne
+weiteres Zutun. Sollte Pages in einem Fork neu eingeschaltet werden müssen:
+**Settings → Pages → Source: „GitHub Actions"**. Der Workflow versucht das
+zwar selbst, das `GITHUB_TOKEN` darf eine Pages-Seite aber nicht anlegen
+(`Resource not accessible by integration`).
 
 Zusätzlich erzeugt `node build-standalone.js` unter `dist/index.html` eine
 einzelne, in sich geschlossene HTML-Datei mit eingebettetem CSS, JavaScript

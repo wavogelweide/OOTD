@@ -1,0 +1,35 @@
+<!doctype html><meta charset="utf-8"><title>OOTD – Silhouetten-Werkbank</title>
+<style>
+ body{background:#F7F3EB;font:13px system-ui;margin:0;padding:20px;color:#1F2A24}
+ h2{font:700 12px system-ui;letter-spacing:.1em;text-transform:uppercase;color:#8C673B;margin:20px 0 8px}
+ .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}
+ .grid.small{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+ figure{margin:0;background:#FFFDF7;border:1px solid #CFC2AB;border-radius:14px;padding:8px;text-align:center}
+ figure svg{height:100px;width:auto;max-width:100%}
+ .small figure svg{height:64px;max-width:100%}
+ figcaption{font-size:10px;color:#55605A;margin-top:4px}
+</style>
+<div id="out"></div>
+<script type="module">
+import { garmentSvg } from './js/svg.js';
+const S=(o)=>({id:'x',name:o.subtype,category:'top',color:'#2E4B3C',pattern:'solid',patternColor:null,formality:2,warmth:2,preppyScore:5,...o});
+const set=[
+ ['top','Oxford-Hemd'],['top','Polohemd'],['top','Kaschmirpullover'],['top','Rollkragenpullover'],
+ ['top','T-Shirt'],['top','Cardigan'],
+ ['bottom','Chino'],['bottom','Bermuda-Shorts'],['bottom','Faltenrock'],
+ ['dress','Etuikleid'],
+ ['outer','Blazer'],['outer','Camel Coat'],['outer','Steppweste'],
+ ['shoes','Penny-Loafer'],['shoes','Weiße Sneaker'],['shoes','Chelsea Boots'],['shoes','Ballerinas'],
+ ['accessory','Krawatte'],['accessory','Strickschal'],['accessory','Ledergürtel'],
+ ['accessory','Perlenkette'],['accessory','Baseball-Cap'],['accessory','Uhr'],['accessory','Haarband'],
+];
+const colors={top:'#22334E',bottom:'#C19A6B',dress:'#7A2E2E',outer:'#2E4B3C',shoes:'#5B4636',accessory:'#C9A227'};
+function block(title, cls, mk){
+  return `<h2>${title}</h2><div class="grid ${cls}">` +
+    set.map(([category,subtype])=>`<figure>${garmentSvg(mk(category,subtype))}<figcaption>${subtype}</figcaption></figure>`).join('') + '</div>';
+}
+document.getElementById('out').innerHTML =
+  block('Groß – uni','', (c,s)=>S({category:c,subtype:s,color:colors[c]})) +
+  block('Klein (78px, wie in der App)','small',(c,s)=>S({category:c,subtype:s,color:colors[c]})) +
+  block('Mit Tartan-Muster','',(c,s)=>S({category:c,subtype:s,color:colors[c],pattern:'tartan',patternColor:'#F2E9DC'}));
+</script>
