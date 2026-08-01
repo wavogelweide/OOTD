@@ -11,10 +11,11 @@ import {
 } from './catalog.js';
 import {
   getGarments, getGarment, addGarment, updateGarment, removeGarment,
-  replaceGarments, isPersistent,
+  replaceGarments, isPersistent, getHistory, getHistoryEntry, saveHistoryEntry,
 } from './store.js';
 import { garmentSvg, patternSwatch } from './svg.js';
 import { SEED_GARMENTS } from './seed-data.js';
+import { generateOutfit, dateKey } from './engine.js';
 
 const el = (id) => document.getElementById(id);
 
@@ -118,6 +119,187 @@ export function renderWardrobe() {
   dom.emptyAll.hidden = all.length > 0;
   dom.emptyFilter.hidden = all.length === 0 || visible.length > 0;
   dom.fab.hidden = !document.getElementById('panel-wardrobe').classList.contains('is-active');
+}
+
+/* --------------------------------------------------------------------------
+   Tab "Heute": Vorschlag, Bewertung, Verlauf
+   -------------------------------------------------------------------------- */
+
+/** "YYYY-MM-DD" als lokales Datum lesen – new Date(string) läge in UTC. */
+function parseDateKey(key) {
+  const [year, month, day] = key.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function starsMarkup(count) {
+  const stars = Array.from({ length: 5 }, (_, i) =>
+    `<span class="star${i < count ? ' is-on' : ''}" aria-hidden="true">★</span>`).join('');
+  return `<p class="stars" role="img" aria-label="Stil-Bewertung: ${count} von 5 Sternen">${stars}</p>`;
+}
+
+function outfitPiece(item) {
+  const patternLabel = PATTERNS.find((p) => p.key === item.pattern)?.label || '';
+  return `
+    <figure class="piece">
+      <div class="piece__figure">${garmentSvg(item)}</div>
+      <figcaption class="piece__caption">
+        <span class="piece__dot" style="--swatch:${item.color}" aria-hidden="true"></span>
+        <span class="piece__name">${escapeHtml(item.name)}</span>
+        ${item.pattern !== 'solid' ? `<span class="piece__pattern">${patternLabel}</span>` : ''}
+      </figcaption>
+    </figure>`;
+}
+
+/** Empty-State, wenn die Garderobe für einen Vorschlag noch nicht reicht. */
+function todayEmptyMarkup(missing, wardrobeEmpty) {
+  const list = missing.length === 1
+    ? missing[0]
+    : `${missing.slice(0, -1).join(', ')} und ${missing.at(-1)}`;
+  return `
+    <div class="card card--placeholder empty-state">
+      <span class="empty-state__icon" aria-hidden="true">👔</span>
+      <h2 class="empty-state__title">Noch kein Vorschlag</h2>
+      <p class="empty-state__text">
+        ${wardrobeEmpty
+          ? 'Deine Garderobe ist noch leer. Lege ein paar Teile an – oder starte mit einer kuratierten Beispiel-Garderobe.'
+          : `Für ein vollständiges Outfit fehlt noch ${list}.`}
+      </p>
+      <div class="empty-state__actions">
+        <button class="btn btn--primary" type="button" data-goto-tab="wardrobe">Zur Garderobe</button>
+        ${wardrobeEmpty ? '<button class="btn btn--ghost" type="button" data-seed>Beispiel-Garderobe laden</button>' : ''}
+      </div>
+    </div>`;
+}
+
+function outfitMarkup(result, liked) {
+  return `
+    <article class="card outfit">
+      <header class="outfit__head">
+        ${starsMarkup(result.score.stars)}
+        <p class="outfit__score"><strong>${Math.round(result.score.total)}</strong> von 100</p>
+      </header>
+
+      <div class="outfit__rack" id="outfit-rack">
+        ${result.items.map(outfitPiece).join('')}
+      </div>
+
+      <div class="outfit__why">
+        <h2 class="outfit__why-title">Warum das funktioniert</h2>
+        <p class="outfit__reasons">${result.reasons.map(escapeHtml).join(' ')}</p>
+      </div>
+
+      <div class="outfit__actions">
+        <button class="btn btn--primary" type="button" id="btn-reroll">
+          <span class="btn__dice" aria-hidden="true">🎲</span> Neu würfeln
+        </button>
+        <button class="btn btn--like${liked ? ' is-liked' : ''}" type="button" id="btn-like"
+                aria-pressed="${liked ? 'true' : 'false'}">
+          <span aria-hidden="true">${liked ? '♥' : '♡'}</span> Gefällt mir
+        </button>
+      </div>
+    </article>`;
+}
+
+/** Kompakter Rückblick auf die letzten sieben Tage. */
+function renderHistory() {
+  const section = el('today-history');
+  const strip = el('history-strip');
+  if (!section || !strip) return;
+
+  const entries = getHistory()
+    .filter((entry) => Array.isArray(entry.outfitIds) && entry.outfitIds.length > 0)
+    .slice(-7)
+    .reverse();
+
+  if (entries.length === 0) {
+    section.hidden = true;
+    return;
+  }
+
+  const today = dateKey();
+  strip.innerHTML = entries.map((entry) => {
+    // Zwischenzeitlich gelöschte Teile werden einfach übersprungen.
+    const colors = entry.outfitIds
+      .map((id) => getGarment(id))
+      .filter(Boolean)
+      .slice(0, 4)
+      .map((g) => `<span class="day__dot" style="--swatch:${g.color}"></span>`)
+      .join('');
+    const date = parseDateKey(entry.date);
+    const label = entry.date === today
+      ? 'Heute'
+      : date.toLocaleDateString('de-DE', { weekday: 'short' });
+    const full = date.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    return `
+      <div class="day${entry.date === today ? ' is-today' : ''}" title="${full}">
+        <span class="day__label">${label}</span>
+        <span class="day__dots" aria-hidden="true">${colors}</span>
+        <span class="day__heart${entry.liked ? ' is-on' : ''}" aria-hidden="true">${entry.liked ? '♥' : ''}</span>
+      </div>`;
+  }).join('');
+
+  section.hidden = false;
+}
+
+/**
+ * Baut den Tagesvorschlag neu auf.
+ * @param {object} options  rolled: true spielt die Würfel-Animation ab.
+ */
+export function renderToday({ rolled = false } = {}) {
+  const host = el('today-outfit');
+  if (!host) return;
+
+  const garments = getGarments();
+  const today = dateKey();
+  const entry = getHistoryEntry(today);
+  const salt = entry?.salt ?? 0;
+
+  const result = generateOutfit(garments, { seed: today, salt });
+
+  if (!result.ok) {
+    host.innerHTML = todayEmptyMarkup(result.missing, garments.length === 0);
+    renderHistory();
+    return;
+  }
+
+  host.innerHTML = outfitMarkup(result, entry?.liked === true);
+
+  // Den Vorschlag festhalten, damit der Verlauf ihn später zeigen kann.
+  const outfitIds = result.items.map((i) => i.id);
+  if (!entry || entry.outfitIds?.join('|') !== outfitIds.join('|')) {
+    saveHistoryEntry({ date: today, outfitIds, salt, liked: entry?.liked ?? null });
+  }
+
+  if (rolled) {
+    const rack = el('outfit-rack');
+    rack?.classList.add('is-rolling');
+    rack?.addEventListener('animationend', () => rack.classList.remove('is-rolling'), { once: true });
+  }
+
+  renderHistory();
+}
+
+function rerollToday() {
+  const today = dateKey();
+  const entry = getHistoryEntry(today);
+  saveHistoryEntry({ date: today, salt: (entry?.salt ?? 0) + 1, outfitIds: [], liked: null });
+  renderToday({ rolled: true });
+}
+
+function toggleLike() {
+  const today = dateKey();
+  const entry = getHistoryEntry(today);
+  const liked = !(entry?.liked === true);
+  saveHistoryEntry({ date: today, liked });
+  renderToday();
+  toast(liked ? 'Gemerkt – schön, dass es gefällt' : 'Merkung entfernt');
+}
+
+/** Beide Ansichten auffrischen; die Garderobe verändert auch den Vorschlag. */
+export function renderAll() {
+  renderWardrobe();
+  renderToday();
 }
 
 /* --------------------------------------------------------------------------
@@ -289,7 +471,7 @@ function saveFromForm() {
     toast(`„${data.name}“ hinzugefügt`);
   }
   editingId = null;
-  renderWardrobe();
+  renderAll();
 }
 
 /* --------------------------------------------------------------------------
@@ -361,13 +543,31 @@ export function initUI() {
   el('btn-close-dialog').addEventListener('click', closeDialog);
   el('btn-cancel-dialog').addEventListener('click', closeDialog);
 
+  // Heute-Tab: die Knöpfe entstehen bei jedem Rendern neu, daher delegiert.
+  el('today-outfit').addEventListener('click', (event) => {
+    const target = event.target;
+    if (target.closest('#btn-reroll')) rerollToday();
+    else if (target.closest('#btn-like')) toggleLike();
+    else if (target.closest('[data-seed]')) {
+      replaceGarments(SEED_GARMENTS);
+      renderAll();
+      toast('Beispiel-Garderobe geladen');
+    } else {
+      // Tab-Wechsel liegt in app.js – hier nur als Ereignis melden.
+      const link = target.closest('[data-goto-tab]');
+      if (link) {
+        document.dispatchEvent(new CustomEvent('ootd:goto-tab', { detail: link.dataset.gotoTab }));
+      }
+    }
+  });
+
   // Öffnen
   dom.fab.addEventListener('click', () => openDialog());
   el('btn-add-first').addEventListener('click', () => openDialog());
 
   el('btn-load-seed').addEventListener('click', () => {
     replaceGarments(SEED_GARMENTS);
-    renderWardrobe();
+    renderAll();
     toast('Beispiel-Garderobe geladen');
   });
 
@@ -383,7 +583,7 @@ export function initUI() {
       openDialog(garment);
     } else if (await confirmDelete(garment.name)) {
       removeGarment(id);
-      renderWardrobe();
+      renderAll();
       toast(`„${garment.name}“ entfernt`);
     }
   });
@@ -403,7 +603,7 @@ export function initUI() {
     toast('Speichern nicht möglich – Daten gelten nur für diese Sitzung');
   }
 
-  renderWardrobe();
+  renderAll();
 }
 
 function escapeHtml(value) {

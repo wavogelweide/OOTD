@@ -605,10 +605,220 @@ button, input, select { font: inherit; color: inherit; }
 }
 
 /* --------------------------------------------------------------------------
-   11. History-Leiste
+   10b. Outfit des Tages
+   -------------------------------------------------------------------------- */
+.outfit { display: grid; gap: 1.2rem; }
+
+.outfit__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.stars { display: flex; gap: .12rem; font-size: 1.35rem; line-height: 1; }
+.star { color: var(--line-strong); }
+.star.is-on {
+  color: var(--gold);
+  text-shadow: 0 1px 2px rgba(176, 141, 62, .35);
+  animation: star-pop .45s var(--ease-spring) both;
+}
+.star.is-on:nth-child(2) { animation-delay: .06s; }
+.star.is-on:nth-child(3) { animation-delay: .12s; }
+.star.is-on:nth-child(4) { animation-delay: .18s; }
+.star.is-on:nth-child(5) { animation-delay: .24s; }
+
+@keyframes star-pop {
+  from { opacity: 0; transform: scale(.4) rotate(-25deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+.outfit__score {
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.outfit__score strong {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--forest-deep);
+  letter-spacing: 0;
+}
+
+/* Die Teile des Outfits nebeneinander */
+.outfit__rack {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: .6rem;
+  padding: .9rem .6rem;
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(232, 213, 196, .45), rgba(232, 213, 196, 0) 72%),
+    var(--cream);
+  border: 1px solid var(--line);
+}
+.outfit__rack.is-rolling { animation: roll .55s var(--ease-out); }
+
+@keyframes roll {
+  0%   { transform: none; }
+  25%  { transform: translateX(-5px) rotate(-1.2deg); }
+  55%  { transform: translateX(5px) rotate(1.2deg); }
+  80%  { transform: translateX(-2px) rotate(-.4deg); }
+  100% { transform: none; }
+}
+
+.piece {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  animation: fade-up .45s var(--ease-out) both;
+}
+.piece:nth-child(2) { animation-delay: .05s; }
+.piece:nth-child(3) { animation-delay: .1s; }
+.piece:nth-child(4) { animation-delay: .15s; }
+.piece:nth-child(5) { animation-delay: .2s; }
+.piece:nth-child(6) { animation-delay: .25s; }
+
+.piece__figure { height: 96px; display: grid; place-items: center; }
+.piece__figure .garment-svg { height: 100%; width: auto; }
+
+.piece__caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .25rem .3rem;
+  text-align: center;
+}
+.piece__dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--swatch);
+  border: 1px solid rgba(31, 42, 36, .2);
+  flex: none;
+}
+.piece__name {
+  font-size: .74rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.piece__pattern {
+  padding: .05rem .4rem;
+  border-radius: var(--r-pill);
+  background: var(--blush);
+  color: var(--burgundy);
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+
+.outfit__why {
+  padding: .9rem 1rem;
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  background: rgba(232, 213, 196, .28);
+}
+.outfit__why-title {
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--camel);
+  margin-bottom: .3rem;
+}
+.outfit__reasons {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--forest-deep);
+}
+
+.outfit__actions { display: flex; flex-wrap: wrap; gap: .7rem; }
+.outfit__actions .btn { flex: 1 1 auto; }
+
+.btn--like {
+  background: var(--ivory);
+  color: var(--burgundy);
+  border-color: var(--line-strong);
+}
+.btn--like:hover { background: var(--blush); border-color: var(--burgundy); }
+.btn--like.is-liked {
+  background: var(--burgundy);
+  border-color: var(--burgundy);
+  color: var(--ivory);
+}
+.btn--like.is-liked span { animation: heart-beat .5s var(--ease-spring); }
+
+@keyframes heart-beat {
+  0%, 100% { transform: scale(1); }
+  40%      { transform: scale(1.35); }
+}
+
+.btn:active .btn__dice { animation: dice-spin .5s var(--ease-out); }
+@keyframes dice-spin {
+  from { transform: rotate(0); }
+  to   { transform: rotate(360deg); }
+}
+
+/* --------------------------------------------------------------------------
+   11. Verlaufs-Leiste
    -------------------------------------------------------------------------- */
 .history { margin-top: clamp(2rem, 5vw, 3rem); }
-.history__strip { display: flex; flex-wrap: wrap; gap: .7rem; }
+
+.history__strip {
+  display: flex;
+  gap: .55rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-block: .2rem;
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+}
+.history__strip::-webkit-scrollbar { display: none; }
+
+.day {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  min-width: 62px;
+  padding: .6rem .5rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--ivory);
+  box-shadow: var(--shadow-sm);
+}
+.day.is-today { border-color: var(--forest); box-shadow: 0 0 0 2px rgba(46, 75, 60, .16); }
+
+.day__label {
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.day.is-today .day__label { color: var(--forest); }
+
+.day__dots { display: flex; gap: 3px; }
+.day__dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--swatch);
+  border: 1px solid rgba(31, 42, 36, .18);
+}
+
+.day__heart { font-size: .72rem; line-height: 1; min-height: .8rem; color: transparent; }
+.day__heart.is-on { color: var(--burgundy); }
 
 /* --------------------------------------------------------------------------
    12. Modal / Bottom-Sheet
@@ -1471,7 +1681,9 @@ const PATTERNS = [
   { key: 'argyle',     label: 'Argyle',      loud: true  },
   { key: 'tartan',     label: 'Tartan',      loud: true  },
   { key: 'houndstooth', label: 'Hahnentritt', loud: true },
-  { key: 'polkadot',   label: 'Punkte',      loud: true  },
+  // "Tupfen" statt "Punkte", damit das Muster-Etikett nicht mit der
+  // Punktzahl des Outfits verwechselt wird.
+  { key: 'polkadot',   label: 'Tupfen',      loud: true  },
   { key: 'cable',      label: 'Zopfstrick',  loud: false },
 ];
 
@@ -2458,6 +2670,7 @@ const SEED_GARMENTS = [
 
 
 
+
 const el = (id) => document.getElementById(id);
 
 const dom = {};
@@ -2560,6 +2773,187 @@ function renderWardrobe() {
   dom.emptyAll.hidden = all.length > 0;
   dom.emptyFilter.hidden = all.length === 0 || visible.length > 0;
   dom.fab.hidden = !document.getElementById('panel-wardrobe').classList.contains('is-active');
+}
+
+/* --------------------------------------------------------------------------
+   Tab "Heute": Vorschlag, Bewertung, Verlauf
+   -------------------------------------------------------------------------- */
+
+/** "YYYY-MM-DD" als lokales Datum lesen – new Date(string) läge in UTC. */
+function parseDateKey(key) {
+  const [year, month, day] = key.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function starsMarkup(count) {
+  const stars = Array.from({ length: 5 }, (_, i) =>
+    `<span class="star${i < count ? ' is-on' : ''}" aria-hidden="true">★</span>`).join('');
+  return `<p class="stars" role="img" aria-label="Stil-Bewertung: ${count} von 5 Sternen">${stars}</p>`;
+}
+
+function outfitPiece(item) {
+  const patternLabel = PATTERNS.find((p) => p.key === item.pattern)?.label || '';
+  return `
+    <figure class="piece">
+      <div class="piece__figure">${garmentSvg(item)}</div>
+      <figcaption class="piece__caption">
+        <span class="piece__dot" style="--swatch:${item.color}" aria-hidden="true"></span>
+        <span class="piece__name">${escapeHtml(item.name)}</span>
+        ${item.pattern !== 'solid' ? `<span class="piece__pattern">${patternLabel}</span>` : ''}
+      </figcaption>
+    </figure>`;
+}
+
+/** Empty-State, wenn die Garderobe für einen Vorschlag noch nicht reicht. */
+function todayEmptyMarkup(missing, wardrobeEmpty) {
+  const list = missing.length === 1
+    ? missing[0]
+    : `${missing.slice(0, -1).join(', ')} und ${missing.at(-1)}`;
+  return `
+    <div class="card card--placeholder empty-state">
+      <span class="empty-state__icon" aria-hidden="true">👔</span>
+      <h2 class="empty-state__title">Noch kein Vorschlag</h2>
+      <p class="empty-state__text">
+        ${wardrobeEmpty
+          ? 'Deine Garderobe ist noch leer. Lege ein paar Teile an – oder starte mit einer kuratierten Beispiel-Garderobe.'
+          : `Für ein vollständiges Outfit fehlt noch ${list}.`}
+      </p>
+      <div class="empty-state__actions">
+        <button class="btn btn--primary" type="button" data-goto-tab="wardrobe">Zur Garderobe</button>
+        ${wardrobeEmpty ? '<button class="btn btn--ghost" type="button" data-seed>Beispiel-Garderobe laden</button>' : ''}
+      </div>
+    </div>`;
+}
+
+function outfitMarkup(result, liked) {
+  return `
+    <article class="card outfit">
+      <header class="outfit__head">
+        ${starsMarkup(result.score.stars)}
+        <p class="outfit__score"><strong>${Math.round(result.score.total)}</strong> von 100</p>
+      </header>
+
+      <div class="outfit__rack" id="outfit-rack">
+        ${result.items.map(outfitPiece).join('')}
+      </div>
+
+      <div class="outfit__why">
+        <h2 class="outfit__why-title">Warum das funktioniert</h2>
+        <p class="outfit__reasons">${result.reasons.map(escapeHtml).join(' ')}</p>
+      </div>
+
+      <div class="outfit__actions">
+        <button class="btn btn--primary" type="button" id="btn-reroll">
+          <span class="btn__dice" aria-hidden="true">🎲</span> Neu würfeln
+        </button>
+        <button class="btn btn--like${liked ? ' is-liked' : ''}" type="button" id="btn-like"
+                aria-pressed="${liked ? 'true' : 'false'}">
+          <span aria-hidden="true">${liked ? '♥' : '♡'}</span> Gefällt mir
+        </button>
+      </div>
+    </article>`;
+}
+
+/** Kompakter Rückblick auf die letzten sieben Tage. */
+function renderHistory() {
+  const section = el('today-history');
+  const strip = el('history-strip');
+  if (!section || !strip) return;
+
+  const entries = getHistory()
+    .filter((entry) => Array.isArray(entry.outfitIds) && entry.outfitIds.length > 0)
+    .slice(-7)
+    .reverse();
+
+  if (entries.length === 0) {
+    section.hidden = true;
+    return;
+  }
+
+  const today = dateKey();
+  strip.innerHTML = entries.map((entry) => {
+    // Zwischenzeitlich gelöschte Teile werden einfach übersprungen.
+    const colors = entry.outfitIds
+      .map((id) => getGarment(id))
+      .filter(Boolean)
+      .slice(0, 4)
+      .map((g) => `<span class="day__dot" style="--swatch:${g.color}"></span>`)
+      .join('');
+    const date = parseDateKey(entry.date);
+    const label = entry.date === today
+      ? 'Heute'
+      : date.toLocaleDateString('de-DE', { weekday: 'short' });
+    const full = date.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    return `
+      <div class="day${entry.date === today ? ' is-today' : ''}" title="${full}">
+        <span class="day__label">${label}</span>
+        <span class="day__dots" aria-hidden="true">${colors}</span>
+        <span class="day__heart${entry.liked ? ' is-on' : ''}" aria-hidden="true">${entry.liked ? '♥' : ''}</span>
+      </div>`;
+  }).join('');
+
+  section.hidden = false;
+}
+
+/**
+ * Baut den Tagesvorschlag neu auf.
+ * @param {object} options  rolled: true spielt die Würfel-Animation ab.
+ */
+function renderToday({ rolled = false } = {}) {
+  const host = el('today-outfit');
+  if (!host) return;
+
+  const garments = getGarments();
+  const today = dateKey();
+  const entry = getHistoryEntry(today);
+  const salt = entry?.salt ?? 0;
+
+  const result = generateOutfit(garments, { seed: today, salt });
+
+  if (!result.ok) {
+    host.innerHTML = todayEmptyMarkup(result.missing, garments.length === 0);
+    renderHistory();
+    return;
+  }
+
+  host.innerHTML = outfitMarkup(result, entry?.liked === true);
+
+  // Den Vorschlag festhalten, damit der Verlauf ihn später zeigen kann.
+  const outfitIds = result.items.map((i) => i.id);
+  if (!entry || entry.outfitIds?.join('|') !== outfitIds.join('|')) {
+    saveHistoryEntry({ date: today, outfitIds, salt, liked: entry?.liked ?? null });
+  }
+
+  if (rolled) {
+    const rack = el('outfit-rack');
+    rack?.classList.add('is-rolling');
+    rack?.addEventListener('animationend', () => rack.classList.remove('is-rolling'), { once: true });
+  }
+
+  renderHistory();
+}
+
+function rerollToday() {
+  const today = dateKey();
+  const entry = getHistoryEntry(today);
+  saveHistoryEntry({ date: today, salt: (entry?.salt ?? 0) + 1, outfitIds: [], liked: null });
+  renderToday({ rolled: true });
+}
+
+function toggleLike() {
+  const today = dateKey();
+  const entry = getHistoryEntry(today);
+  const liked = !(entry?.liked === true);
+  saveHistoryEntry({ date: today, liked });
+  renderToday();
+  toast(liked ? 'Gemerkt – schön, dass es gefällt' : 'Merkung entfernt');
+}
+
+/** Beide Ansichten auffrischen; die Garderobe verändert auch den Vorschlag. */
+function renderAll() {
+  renderWardrobe();
+  renderToday();
 }
 
 /* --------------------------------------------------------------------------
@@ -2731,7 +3125,7 @@ function saveFromForm() {
     toast(`„${data.name}“ hinzugefügt`);
   }
   editingId = null;
-  renderWardrobe();
+  renderAll();
 }
 
 /* --------------------------------------------------------------------------
@@ -2803,13 +3197,31 @@ function initUI() {
   el('btn-close-dialog').addEventListener('click', closeDialog);
   el('btn-cancel-dialog').addEventListener('click', closeDialog);
 
+  // Heute-Tab: die Knöpfe entstehen bei jedem Rendern neu, daher delegiert.
+  el('today-outfit').addEventListener('click', (event) => {
+    const target = event.target;
+    if (target.closest('#btn-reroll')) rerollToday();
+    else if (target.closest('#btn-like')) toggleLike();
+    else if (target.closest('[data-seed]')) {
+      replaceGarments(SEED_GARMENTS);
+      renderAll();
+      toast('Beispiel-Garderobe geladen');
+    } else {
+      // Tab-Wechsel liegt in app.js – hier nur als Ereignis melden.
+      const link = target.closest('[data-goto-tab]');
+      if (link) {
+        document.dispatchEvent(new CustomEvent('ootd:goto-tab', { detail: link.dataset.gotoTab }));
+      }
+    }
+  });
+
   // Öffnen
   dom.fab.addEventListener('click', () => openDialog());
   el('btn-add-first').addEventListener('click', () => openDialog());
 
   el('btn-load-seed').addEventListener('click', () => {
     replaceGarments(SEED_GARMENTS);
-    renderWardrobe();
+    renderAll();
     toast('Beispiel-Garderobe geladen');
   });
 
@@ -2825,7 +3237,7 @@ function initUI() {
       openDialog(garment);
     } else if (await confirmDelete(garment.name)) {
       removeGarment(id);
-      renderWardrobe();
+      renderAll();
       toast(`„${garment.name}“ entfernt`);
     }
   });
@@ -2845,7 +3257,7 @@ function initUI() {
     toast('Speichern nicht möglich – Daten gelten nur für diese Sitzung');
   }
 
-  renderWardrobe();
+  renderAll();
 }
 
 function escapeHtml(value) {
@@ -2895,7 +3307,7 @@ function activateTab(name, { focus = false } = {}) {
 
   movePill(tab);
   if (focus) tab.focus();
-  renderWardrobe();
+  renderAll();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -2917,6 +3329,8 @@ document.querySelector('.tabs__list')?.addEventListener('keydown', (event) => {
 for (const link of document.querySelectorAll('[data-goto-tab]')) {
   link.addEventListener('click', () => activateTab(link.dataset.gotoTab, { focus: true }));
 }
+// Dasselbe aus dynamisch erzeugtem Markup, das ui.js als Ereignis meldet.
+document.addEventListener('ootd:goto-tab', (event) => activateTab(event.detail, { focus: true }));
 
 /** Datum ausgeschrieben in den Kopf des Heute-Tabs schreiben. */
 function renderTodayDate() {

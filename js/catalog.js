@@ -59,7 +59,9 @@ export const PATTERNS = [
   { key: 'argyle',     label: 'Argyle',      loud: true  },
   { key: 'tartan',     label: 'Tartan',      loud: true  },
   { key: 'houndstooth', label: 'Hahnentritt', loud: true },
-  { key: 'polkadot',   label: 'Punkte',      loud: true  },
+  // "Tupfen" statt "Punkte", damit das Muster-Etikett nicht mit der
+  // Punktzahl des Outfits verwechselt wird.
+  { key: 'polkadot',   label: 'Tupfen',      loud: true  },
   { key: 'cable',      label: 'Zopfstrick',  loud: false },
 ];
 

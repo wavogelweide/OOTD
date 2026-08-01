@@ -17,10 +17,8 @@ Die App entsteht in fünf Phasen (siehe [BAUPLAN.md](BAUPLAN.md), §9):
 | 1 | Gerüst und Design-System | ✅ fertig |
 | 2 | Garderobe anlegen, bearbeiten, löschen | ✅ fertig |
 | 3 | Outfit-Engine mit Farbharmonie-Scoring | ✅ fertig |
-| 4 | Tab „Heute“: Vorschlag, Bewertung, Verlauf | offen |
+| 4 | Tab „Heute“: Vorschlag, Bewertung, Verlauf | ✅ fertig |
 | 5 | Feinschliff, Barrierefreiheit, Doku | offen |
-
-Der Tab „Heute“ zeigt deshalb noch einen Platzhalter.
 
 ## Lokal starten
 

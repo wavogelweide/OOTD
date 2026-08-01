@@ -2,7 +2,7 @@
  * OOTD – Bootstrap und Tab-Routing.
  */
 
-import { initUI, renderWardrobe } from './ui.js';
+import { initUI, renderAll } from './ui.js';
 
 const tabs = Array.from(document.querySelectorAll('.tab'));
 const pill = document.querySelector('.tabs__pill');
@@ -40,7 +40,7 @@ function activateTab(name, { focus = false } = {}) {
 
   movePill(tab);
   if (focus) tab.focus();
-  renderWardrobe();
+  renderAll();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -62,6 +62,8 @@ document.querySelector('.tabs__list')?.addEventListener('keydown', (event) => {
 for (const link of document.querySelectorAll('[data-goto-tab]')) {
   link.addEventListener('click', () => activateTab(link.dataset.gotoTab, { focus: true }));
 }
+// Dasselbe aus dynamisch erzeugtem Markup, das ui.js als Ereignis meldet.
+document.addEventListener('ootd:goto-tab', (event) => activateTab(event.detail, { focus: true }));
 
 /** Datum ausgeschrieben in den Kopf des Heute-Tabs schreiben. */
 function renderTodayDate() {
