@@ -6,7 +6,7 @@
  * damit die App auch im Privatmodus benutzbar bleibt.
  */
 
-import { computePreppyScore, colorNameFor } from './catalog.js';
+import { computePreppyScore, colorNameFor, CATEGORY_BY_KEY } from './catalog.js';
 
 const KEY = 'ootd.v1';
 const SCHEMA_VERSION = 1;
@@ -21,10 +21,24 @@ let storageAvailable = true;
 function migrate(raw) {
   const base = emptyState();
   if (!raw || typeof raw !== 'object') return base;
+
+  // Teile aus Kategorien, die es nicht mehr gibt, fallen heraus. Sie wären
+  // sonst weder filterbar noch für einen Vorschlag verwendbar.
+  const garments = (Array.isArray(raw.garments) ? raw.garments : [])
+    .filter((g) => g && CATEGORY_BY_KEY[g.category]);
+  const keptIds = new Set(garments.map((g) => g.id));
+
+  // Verlaufseintraege nur behalten, wenn das Outfit vollstaendig erhalten
+  // bleibt. Ein Rest aus einem entfernten Outfit waere irrefuehrend.
+  const history = (Array.isArray(raw.history) ? raw.history : [])
+    .filter((entry) => Array.isArray(entry.outfitIds)
+      && entry.outfitIds.length > 0
+      && entry.outfitIds.every((id) => keptIds.has(id)));
+
   return {
     schemaVersion: SCHEMA_VERSION,
-    garments: Array.isArray(raw.garments) ? raw.garments : [],
-    history: Array.isArray(raw.history) ? raw.history : [],
+    garments,
+    history,
     settings: { ...base.settings, ...(raw.settings || {}) },
   };
 }

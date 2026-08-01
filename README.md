@@ -1,7 +1,9 @@
 # OOTD – Dein täglicher Stilbegleiter
 
 Eine Web-App, die aus der eigenen Garderobe täglich ein Outfit vorschlägt –
-farblich abgestimmt und im Preppy-/Old-Money-Stil.
+farblich abgestimmt und im Preppy-/Old-Money-Stil. Die App ist auf
+Herrengarderobe ausgelegt: Oberteil, Unterteil, Schuhe, dazu optional Jacke
+und Accessoires.
 
 **Live:** https://wavogelweide.github.io/OOTD/
 
@@ -43,7 +45,7 @@ unten rechts öffnet das Formular für ein neues Teil – mit Kategorie, Art,
 Farbe aus der Palette oder frei gewählt, Muster, Anlass und Wärme. Eine
 Vorschau zeigt dabei laufend, wie das Teil aussehen wird. Wer noch nichts
 angelegt hat, kann mit einem Klick eine kuratierte Beispiel-Garderobe aus
-24 Teilen laden.
+22 Teilen laden.
 
 ## Wie die Vorschläge entstehen
 
@@ -68,7 +70,7 @@ sonst käme bei jedem Würfeln fast immer dasselbe Outfit heraus.
 
 ## Die Silhouetten
 
-Die Kleidungsstücke sind keine Fotos, sondern 21 selbst gezeichnete
+Die Kleidungsstücke sind keine Fotos, sondern 22 selbst gezeichnete
 SVG-Silhouetten, die aus dem Subtyp erkannt und in der Farbe des Teils
 eingefärbt werden; das Muster liegt als SVG-Pattern darüber.
 

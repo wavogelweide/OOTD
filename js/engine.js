@@ -197,7 +197,7 @@ const TOP_TOLERANCE = 8;
 const TOP_POOL = 12;
 
 function byCategory(garments) {
-  const buckets = { top: [], bottom: [], dress: [], outer: [], shoes: [], accessory: [] };
+  const buckets = { top: [], bottom: [], outer: [], shoes: [], accessory: [] };
   for (const g of garments) if (buckets[g.category]) buckets[g.category].push(g);
   return buckets;
 }
@@ -209,13 +209,9 @@ function byCategory(garments) {
 export function missingPieces(garments) {
   const b = byCategory(garments);
   const missing = [];
+  if (b.top.length === 0) missing.push('ein Oberteil');
+  if (b.bottom.length === 0) missing.push('ein Unterteil');
   if (b.shoes.length === 0) missing.push('ein Paar Schuhe');
-  const hasSet = b.top.length > 0 && b.bottom.length > 0;
-  if (!hasSet && b.dress.length === 0) {
-    if (b.top.length === 0) missing.push('ein Oberteil');
-    if (b.bottom.length === 0) missing.push('ein Unterteil');
-    if (b.top.length > 0 && b.bottom.length > 0) missing.push('ein Kleid');
-  }
   return missing;
 }
 
@@ -225,17 +221,11 @@ function pick(rng, list) {
 
 /** Zieht eine zufällige, regelkonforme Kombination. */
 function drawCandidate(rng, buckets) {
-  const items = [];
-  const useDress = buckets.dress.length > 0
-    && (buckets.top.length === 0 || buckets.bottom.length === 0 || rng() < 0.35);
-
-  if (useDress) {
-    items.push(pick(rng, buckets.dress));
-  } else {
-    items.push(pick(rng, buckets.top));
-    items.push(pick(rng, buckets.bottom));
-  }
-  items.push(pick(rng, buckets.shoes));
+  const items = [
+    pick(rng, buckets.top),
+    pick(rng, buckets.bottom),
+    pick(rng, buckets.shoes),
+  ];
 
   if (buckets.outer.length > 0 && rng() < 0.5) items.push(pick(rng, buckets.outer));
 

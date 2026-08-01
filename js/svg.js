@@ -90,23 +90,6 @@ const SHAPES = {
       <path d="M50 23 L50 46" stroke="${c.line}" stroke-width="1.4" opacity=".7"/>
       <path d="M29 71 L45 71 M55 71 L71 71" stroke="${c.line}" stroke-width="1.6" opacity=".65"/>`,
   },
-  skirt: {
-    // Faltenrock: Bundband plus angedeutete Kellerfalten.
-    path: 'M29 10 L71 10 L87 94 C74 102 26 102 13 94 Z',
-    details: (c) => `
-      <path d="M28.6 10 L71.4 10 L72.9 24 L27.1 24 Z" fill="${c.dark}"/>
-      <path d="M39 26 L31 97 M50 26 L50 100 M61 26 L69 97" stroke="${c.line}" stroke-width="1.3" opacity=".5"/>
-      <path d="M44 26 L40 99 M56 26 L60 99" stroke="${c.line}" stroke-width="1" opacity=".3"/>`,
-  },
-
-  /* ---- Kleid ----------------------------------------------------------- */
-  dress: {
-    path: 'M36 10 C38 23 43 28 50 28 C57 28 62 23 64 10 L81 17 L90 45 L74 52 L70 41 L72 62 L88 106 C72 114 28 114 12 106 L28 62 L30 41 L26 52 L10 45 L19 17 Z',
-    details: (c) => `
-      <path d="M36 10 C38 23 43 28 50 28 C57 28 62 23 64 10" fill="none" stroke="${c.line}" stroke-width="2.4"/>
-      <path d="M28.6 60 C40 65 60 65 71.4 60 L72 68 C60 73 40 73 28 68 Z" fill="${c.dark}"/>
-      <path d="M22 92 C38 98 62 98 78 92" fill="none" stroke="${c.line}" stroke-width="1.2" opacity=".45"/>`,
-  },
 
   /* ---- Jacken ---------------------------------------------------------- */
   blazer: {
@@ -188,18 +171,6 @@ const SHAPES = {
       <path d="M60 28 L64 28.5 M60 34 L64 34.5 M60 40 L64 40.5" stroke="${c.line}" stroke-width="1" opacity=".6"/>
       <path d="M57 58 C70 62 81 70 86 80" fill="none" stroke="${c.line}" stroke-width="1.3" opacity=".5"/>`,
   },
-  flat: {
-    // Ballerina: sehr flach, weiter Ausschnitt, kleine Schleife an der Spitze.
-    box: '4 40 96 62',
-    path: 'M14 84 L14 73 C14 64 23 59 35 57 L45 56 C47 64 55 66 64 64 L73 62 C86 60 94 70 95 84 Z',
-    details: (c) => `
-      <path d="M11 82 L94 82 C97 82 98 86 96 89 C93 92 87 93 79 93 L18 93 C13 93 10 90 10 86 Z"
-            fill="${c.dark}" stroke="${c.line}" stroke-width="1.2" stroke-linejoin="round"/>
-      <path d="M14 74 C22 70 30 68 38 67" fill="none" stroke="${c.line}" stroke-width="1.4" opacity=".6"/>
-      <path d="M70 58 C75 53 82 54 83 59 C80 57 74 57 70 58 Z M83 59 C88 55 93 58 92 63 C90 60 86 59 83 59 Z"
-            fill="${c.light}" stroke="${c.line}" stroke-width="1.1" stroke-linejoin="round"/>
-      <circle cx="83" cy="60" r="2" fill="${c.line}"/>`,
-  },
 
   /* ---- Accessoires ------------------------------------------------------ */
   tie: {
@@ -208,6 +179,15 @@ const SHAPES = {
       <path d="M40 8 L60 8 L65 28 L35 28 Z" fill="${c.dark}" stroke="${c.line}" stroke-width="1.4" stroke-linejoin="round"/>
       <path d="M44 14 C47 20 53 20 56 14" fill="none" stroke="${c.line}" stroke-width="1.4" opacity=".7"/>
       <path d="M37 31 L63 31" stroke="${c.line}" stroke-width="1.6" opacity=".6"/>`,
+  },
+  pocketsquare: {
+    // Einstecktuch mit Spitzenfaltung, wie es aus der Brusttasche schaut.
+    box: '8 22 84 72',
+    path: 'M20 54 L34 32 L48 54 L62 32 L76 54 L79 88 L21 88 Z',
+    details: (c) => `
+      <path d="M34 32 L34 88 M48 54 L48 88 M62 32 L62 88" stroke="${c.line}"
+            stroke-width="1.2" opacity=".45"/>
+      <path d="M21 74 L79 74" stroke="${c.line}" stroke-width="1.6" opacity=".6"/>`,
   },
   scarf: {
     // Schlauchschal: geschlossener Ring (Loch über fill-rule) mit zwei Enden.
@@ -227,21 +207,6 @@ const SHAPES = {
       <path d="M60 56 L60 68" stroke="${c.metal}" stroke-width="4" stroke-linecap="round"/>
       ${[18, 30, 42].map((x) => `<circle cx="${x}" cy="62" r="2.6" fill="${c.dark}"/>`).join('')}
       <path d="M6 54 L70 54 M6 70 L70 70" stroke="${c.line}" stroke-width="1.1" opacity=".5"/>`,
-  },
-  necklace: {
-    box: '10 12 80 72',
-    path: '',
-    details: (c, color) => {
-      const beads = [];
-      for (let i = 0; i <= 16; i += 1) {
-        const t = Math.PI * (i / 16);
-        const x = 50 - Math.cos(t) * 34;
-        const y = 22 + Math.sin(t) * 52;
-        const r = i === 8 ? 7.5 : 4.2;
-        beads.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${color}" stroke="${c.line}" stroke-width="1"/>`);
-      }
-      return beads.join('');
-    },
   },
   cap: {
     // Baseball-Cap im Profil: Kuppel mit Nahtlinien und Schirm.
@@ -263,13 +228,6 @@ const SHAPES = {
       <path d="M50 47 L50 60 L60 65" fill="none" stroke="${c.line}" stroke-width="2.2" stroke-linecap="round"/>
       <circle cx="50" cy="60" r="2" fill="${c.line}"/>`,
   },
-  headband: {
-    box: '4 10 92 64',
-    path: 'M50 18 C74 18 88 40 88 66 L76 66 C76 46 66 30 50 30 C34 30 24 46 24 66 L12 66 C12 40 26 18 50 18 Z',
-    details: (c) => `
-      <path d="M50 24 C70 24 82 44 82 66 M50 24 C30 24 18 44 18 66"
-            fill="none" stroke="${c.line}" stroke-width="1.2" opacity=".45"/>`,
-  },
   tag: {
     path: 'M28 20 L72 20 C77 20 80 23 80 28 L80 96 C80 101 77 104 72 104 L28 104 C23 104 20 101 20 96 L20 28 C20 23 23 20 28 20 Z',
     details: (c) => `
@@ -290,11 +248,9 @@ const SHAPE_RULES = {
     [/./, 'sweater'],
   ],
   bottom: [
-    [/rock|skirt/i, 'skirt'],
     [/short|bermuda/i, 'shorts'],
     [/./, 'trousers'],
   ],
-  dress: [[/./, 'dress']],
   outer: [
     [/weste|vest|gilet/i, 'vest'],
     [/mantel|coat|trench/i, 'coat'],
@@ -303,18 +259,16 @@ const SHAPE_RULES = {
   shoes: [
     [/sneaker|turnschuh/i, 'sneaker'],
     [/chelsea|stiefel|boot(?!s)/i, 'boot'],
-    [/ballerina|flat/i, 'flat'],
     [/oxford|brogue|schnür|derby/i, 'oxford'],
     [/./, 'loafer'],
   ],
   accessory: [
     [/krawatte|tie|fliege/i, 'tie'],
-    [/schal|tuch|scarf/i, 'scarf'],
+    [/einstecktuch|pocket|square/i, 'pocketsquare'],
+    [/schal|scarf|tuch/i, 'scarf'],
     [/gürtel|guertel|belt/i, 'belt'],
-    [/perlen|kette|collier/i, 'necklace'],
     [/cap|mütze|muetze|hut|kappe/i, 'cap'],
     [/uhr|watch/i, 'watch'],
-    [/haarband|stirnband|reif/i, 'headband'],
     [/./, 'tag'],
   ],
 };

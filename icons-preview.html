@@ -16,14 +16,13 @@ const S=(o)=>({id:'x',name:o.subtype,category:'top',color:'#2E4B3C',pattern:'sol
 const set=[
  ['top','Oxford-Hemd'],['top','Polohemd'],['top','Kaschmirpullover'],['top','Rollkragenpullover'],
  ['top','T-Shirt'],['top','Cardigan'],
- ['bottom','Chino'],['bottom','Bermuda-Shorts'],['bottom','Faltenrock'],
- ['dress','Etuikleid'],
+ ['bottom','Chino'],['bottom','Bermuda-Shorts'],['bottom','Flanellhose'],
  ['outer','Blazer'],['outer','Camel Coat'],['outer','Steppweste'],
- ['shoes','Penny-Loafer'],['shoes','Weiße Sneaker'],['shoes','Chelsea Boots'],['shoes','Ballerinas'],
- ['accessory','Krawatte'],['accessory','Strickschal'],['accessory','Ledergürtel'],
- ['accessory','Perlenkette'],['accessory','Baseball-Cap'],['accessory','Uhr'],['accessory','Haarband'],
+ ['shoes','Penny-Loafer'],['shoes','Oxford-Schuhe'],['shoes','Weiße Sneaker'],['shoes','Chelsea Boots'],
+ ['accessory','Krawatte'],['accessory','Einstecktuch'],['accessory','Strickschal'],['accessory','Ledergürtel'],
+ ['accessory','Baseball-Cap'],['accessory','Uhr'],
 ];
-const colors={top:'#22334E',bottom:'#C19A6B',dress:'#7A2E2E',outer:'#2E4B3C',shoes:'#5B4636',accessory:'#C9A227'};
+const colors={top:'#22334E',bottom:'#C19A6B',outer:'#2E4B3C',shoes:'#5B4636',accessory:'#C9A227'};
 function block(title, cls, mk){
   return `<h2>${title}</h2><div class="grid ${cls}">` +
     set.map(([category,subtype])=>`<figure>${garmentSvg(mk(category,subtype))}<figcaption>${subtype}</figcaption></figure>`).join('') + '</div>';

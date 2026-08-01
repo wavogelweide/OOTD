@@ -322,8 +322,14 @@
         const missing = missingPieces([make({ category: 'top' }), make({ category: 'bottom' })]);
         assert(missing.some((m) => m.includes('Schuhe')), `war: ${missing.join(', ')}`);
       });
-      it('ein Kleid ersetzt Ober- und Unterteil', () => {
-        equal(missingPieces([make({ category: 'dress' }), make({ category: 'shoes' })]), []);
+      it('ohne Oberteil kein Vorschlag', () => {
+        const missing = missingPieces([make({ category: 'bottom' }), make({ category: 'shoes' })]);
+        assert(missing.some((m) => m.includes('Oberteil')), `war: ${missing.join(', ')}`);
+      });
+      it('Ober- und Unterteil plus Schuhe genügen', () => {
+        equal(missingPieces([
+          make({ category: 'top' }), make({ category: 'bottom' }), make({ category: 'shoes' }),
+        ]), []);
       });
       it('Mini-Garderobe ergibt genau diese drei Teile', () => {
         const garments = trio();
@@ -335,7 +341,7 @@
         const garments = [
           ...trio(),
           make({ category: 'top', name: 'Pulli', color: '#2E4B3C' }),
-          make({ category: 'bottom', name: 'Rock', color: '#22334E' }),
+          make({ category: 'bottom', name: 'Cordhose', color: '#22334E' }),
           make({ category: 'outer', name: 'Blazer', color: '#22334E' }),
           make({ category: 'accessory', name: 'Tuch', color: '#C9A227' }),
           make({ category: 'shoes', name: 'Sneaker', color: '#FAFAF7' }),
@@ -373,14 +379,20 @@
           assert(total >= 70, `Vorschlag zu schwach: ${total.toFixed(0)}`);
         }
       });
-      it('Vorschlag enthält immer Schuhe und eine Basis', () => {
-        const garments = [...trio(), make({ category: 'dress', name: 'Kleid', color: '#22334E' })];
+      it('Vorschlag enthält immer Oberteil, Unterteil und Schuhe', () => {
+        const garments = [...trio(), make({ category: 'outer', name: 'Blazer', color: '#22334E' })];
         for (let salt = 0; salt < 12; salt += 1) {
-          const items = generateOutfit(garments, { seed: 'x', salt }).items;
-          const cats = items.map((i) => i.category);
-          assert(cats.includes('shoes'), 'Schuhe fehlen');
-          assert(cats.includes('dress') || (cats.includes('top') && cats.includes('bottom')),
-            `unvollständig: ${cats.join(', ')}`);
+          const cats = generateOutfit(garments, { seed: 'x', salt }).items.map((i) => i.category);
+          for (const needed of ['top', 'bottom', 'shoes']) {
+            assert(cats.includes(needed), `${needed} fehlt: ${cats.join(', ')}`);
+          }
+        }
+      });
+      it('Kleider gibt es nicht mehr – solche Teile werden ignoriert', () => {
+        const garments = [...trio(), make({ category: 'dress', name: 'Altbestand', color: '#22334E' })];
+        for (let salt = 0; salt < 8; salt += 1) {
+          const cats = generateOutfit(garments, { seed: 'y', salt }).items.map((i) => i.category);
+          assert(!cats.includes('dress'), `Kleid im Vorschlag: ${cats.join(', ')}`);
         }
       });
       it('Begründung liefert ein bis zwei Sätze', () => {
@@ -397,7 +409,7 @@
       it('Subtypen führen zur passenden Form', () => {
         equal(shapeFor({ category: 'top', subtype: 'Polohemd' }), 'polo');
         equal(shapeFor({ category: 'top', subtype: 'Oxford-Hemd' }), 'shirt');
-        equal(shapeFor({ category: 'bottom', subtype: 'Faltenrock' }), 'skirt');
+        equal(shapeFor({ category: 'bottom', subtype: 'Bermuda-Shorts' }), 'shorts');
         equal(shapeFor({ category: 'outer', subtype: 'Trenchcoat' }), 'coat');
         equal(shapeFor({ category: 'shoes', subtype: 'Chelsea Boots' }), 'boot');
       });

@@ -10,7 +10,6 @@ import { rgbDistance } from './color.js';
 export const CATEGORIES = [
   { key: 'top',       label: 'Oberteil',   plural: 'Oberteile',   icon: '👕' },
   { key: 'bottom',    label: 'Unterteil',  plural: 'Unterteile',  icon: '👖' },
-  { key: 'dress',     label: 'Kleid',      plural: 'Kleider',     icon: '👗' },
   { key: 'outer',     label: 'Jacke',      plural: 'Jacken',      icon: '🧥' },
   { key: 'shoes',     label: 'Schuhe',     plural: 'Schuhe',      icon: '👞' },
   { key: 'accessory', label: 'Accessoire', plural: 'Accessoires', icon: '🧣' },
@@ -21,16 +20,15 @@ export const CATEGORY_BY_KEY = Object.fromEntries(CATEGORIES.map((c) => [c.key, 
 /** Vorschlagslisten je Kategorie (Bauplan §4.1). */
 export const SUBTYPES = {
   top: ['Oxford-Hemd', 'Button-down-Hemd', 'Polohemd', 'Kaschmirpullover',
-        'Rollkragenpullover', 'Cardigan', 'Cable-Knit-Sweater', 'Bluse', 'T-Shirt'],
-  bottom: ['Chino', 'Anzughose', 'Faltenrock', 'Plisseerock', 'Tennisrock',
-           'Cordhose', 'Dunkle Jeans', 'Bermuda-Shorts'],
-  dress: ['Etuikleid', 'Hemdblusenkleid', 'Strickkleid', 'Tenniskleid'],
+        'Rollkragenpullover', 'Cardigan', 'Cable-Knit-Sweater', 'T-Shirt'],
+  bottom: ['Chino', 'Anzughose', 'Cordhose', 'Flanellhose', 'Dunkle Jeans',
+           'Bermuda-Shorts'],
   outer: ['Blazer', 'Tweed-Sakko', 'Trenchcoat', 'Steppweste', 'Camel Coat',
           'Harrington-Jacke', 'College-Jacke'],
   shoes: ['Penny-Loafer', 'Tassel-Loafer', 'Oxford-Schuhe', 'Bootsschuhe',
-          'Ballerinas', 'Weiße Sneaker', 'Brogues', 'Chelsea Boots'],
-  accessory: ['Seidentuch', 'Krawatte', 'Ledergürtel', 'Perlenkette',
-              'Baseball-Cap', 'Strickschal', 'Haarband', 'Uhr'],
+          'Weiße Sneaker', 'Brogues', 'Chelsea Boots'],
+  accessory: ['Einstecktuch', 'Krawatte', 'Fliege', 'Ledergürtel',
+              'Baseball-Cap', 'Strickschal', 'Uhr'],
 };
 
 /** Old-Money-Kernpalette (Bauplan §4.2). */
@@ -78,9 +76,9 @@ export const WARMTH_LABELS = { 1: 'Luftig', 2: 'Mittel', 3: 'Warm' };
 /** Subtypen, die den Preppy-Kanon treffen (Bauplan §5.4). */
 const PREPPY_PATTERN = new RegExp([
   'polo', 'chino', 'loafer', 'blazer', 'cardigan', 'cable', 'zopf', 'bootsschuh',
-  'tennis', 'oxford', 'button-down', 'tweed', 'trench', 'perlen', 'seidentuch',
-  'brogue', 'plissee', 'falten', 'kaschmir', 'harrington', 'college', 'steppweste',
-  'camel', 'ballerina', 'hemdblusen', 'strickschal', 'etui', 'rollkragen',
+  'oxford', 'button-down', 'tweed', 'trench', 'perlen', 'seidentuch',
+  'brogue', 'kaschmir', 'harrington', 'college', 'steppweste',
+  'camel', 'strickschal', 'rollkragen', 'flanell', 'einstecktuch', 'fliege',
   'krawatte', 'chelsea', 'mantel', 'bluse', 'hemd', 'sakko', 'cord',
 ].join('|'), 'i');
 

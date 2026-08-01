@@ -83,7 +83,7 @@ Die Spannung auflösen: **Layout und Interaktion verspielt** (weiche Formen, Mic
 {
   id: "g_<timestamp>_<rand>",       // string, eindeutig
   name: "Kaschmir-Pullover",         // frei, Pflicht
-  category: "top" | "bottom" | "outer" | "shoes" | "accessory" | "dress",
+  category: "top" | "bottom" | "outer" | "shoes" | "accessory",
   subtype: string,                   // aus Vorschlagsliste je Kategorie, s. §4.1
   color: "#RRGGBB",                  // via Farb-Picker + benannte Presets
   colorName: "Burgunderrot",         // automatisch aus Preset oder "Eigene Farbe"
@@ -97,12 +97,14 @@ Die Spannung auflösen: **Layout und Interaktion verspielt** (weiche Formen, Mic
 
 ### 4.1 Subtypen-Vorschlagslisten (Datalist/Chips im Formular)
 
-- **top:** Hemd (Oxford/Button-down), Polohemd, Kaschmirpullover, Rollkragenpullover, Cardigan, Sweater (Cable-Knit), Bluse, T-Shirt
-- **bottom:** Chino, Anzughose, Faltenrock, Plisseerock, Tennisrock, Cordhose, Jeans (dunkel), Shorts (Bermuda)
+- **top:** Hemd (Oxford/Button-down), Polohemd, Kaschmirpullover, Rollkragenpullover, Cardigan, Sweater (Cable-Knit), T-Shirt
+- **bottom:** Chino, Anzughose, Cordhose, Flanellhose, Jeans (dunkel), Shorts (Bermuda)
 - **outer:** Blazer, Tweed-Sakko, Trenchcoat, Steppweste, Mantel (Camel Coat), Harrington-Jacke, College-Jacke
-- **shoes:** Loafer (Penny/Tassel), Oxford-Schuhe, Bootsschuhe, Ballerinas, weiße Sneaker (clean), Brogues, Chelsea Boots
-- **accessory:** Seidentuch, Krawatte, Gürtel (Leder), Perlenkette, Baseball-Cap, Strickschal, Haarband, Uhr
-- **dress:** Etuikleid, Hemdblusenkleid, Strickkleid, Tenniskleid
+- **shoes:** Loafer (Penny/Tassel), Oxford-Schuhe, Bootsschuhe, weiße Sneaker (clean), Brogues, Chelsea Boots
+- **accessory:** Einstecktuch, Krawatte, Fliege, Gürtel (Leder), Baseball-Cap, Strickschal, Uhr
+
+> Die App ist auf Herrengarderobe beschränkt; die Kategorie `dress` sowie
+> Röcke, Ballerinas, Perlenkette und Haarband wurden entfernt.
 
 ### 4.2 Farb-Presets (Picker-Chips, je mit Name + Hex)
 
@@ -192,7 +194,7 @@ Wappen-Logo (SVG-Monogramm), Titel "OOTD", Untertitel "Dein täglicher Stilbegle
 - **Starter-Garderobe:** Beim allerersten Start Button "Beispiel-Garderobe laden" (≈ 14 kuratierte Preppy-Teile), damit die App sofort erlebbar ist. Alternativ leer starten.
 
 ### 6.4 SVG-Silhouetten & Muster
-- Je Kategorie/Subtyp-Gruppe eine einfache Silhouette als Inline-SVG-Template in `js/svg.js` (Hemd, Pullover, Hose, Rock, Kleid, Schuh, Jacke/Blazer, Accessoire-Icon). Einfache, freundliche Formen – keine Fotorealistik.
+- Je Kategorie/Subtyp-Gruppe eine einfache Silhouette als Inline-SVG-Template in `js/svg.js` (Hemd, Polo, Pullover, Cardigan, Hose, Shorts, Blazer, Mantel, Weste, vier Schuhformen, Accessoires). Einfache, freundliche Formen – keine Fotorealistik.
 - Muster als `<pattern>`-Defs, parametrisiert mit `color`/`patternColor`: stripes (diagonale Linien), argyle (Rauten), houndstooth (vereinfachtes Zackenmuster), tartan (Kreuzlinien), polkadot (Kreise), cable (vertikale Wellenlinien).
 
 ---
