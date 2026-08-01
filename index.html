@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OOTD – Dein täglicher Stilbegleiter</title>
+  <meta name="description" content="Tägliche Outfit-Vorschläge aus der eigenen Garderobe – farblich abgestimmt im Preppy- und Old-Money-Stil.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎾</text></svg>">
+</head>
+<body>
+  <div class="page">
+
+    <!-- ==================== Header ==================== -->
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="#" aria-label="OOTD – Startseite">
+          <span class="brand__crest" aria-hidden="true">
+            <svg viewBox="0 0 64 76" role="presentation" focusable="false">
+              <path class="crest-shield" d="M32 2 L60 11 V38 C60 56 47 68 32 74 C17 68 4 56 4 38 V11 Z"/>
+              <path class="crest-inner" d="M32 8 L54 15 V38 C54 52 44 62 32 68 C20 62 10 52 10 38 V15 Z"/>
+              <path class="crest-band" d="M10 30 L54 30 L54 38 L10 38 Z"/>
+              <text class="crest-mono" x="32" y="27" text-anchor="middle">O</text>
+              <text class="crest-year" x="32" y="50" text-anchor="middle">OOTD</text>
+            </svg>
+          </span>
+          <span class="brand__words">
+            <span class="brand__title">OOTD</span>
+            <span class="brand__tagline">Dein täglicher Stilbegleiter</span>
+          </span>
+        </a>
+
+        <p class="header-stickers" aria-hidden="true">
+          <span class="sticker sticker--1">🎾</span>
+          <span class="sticker sticker--2">⛵</span>
+          <span class="sticker sticker--3">🏇</span>
+        </p>
+      </div>
+
+      <nav class="tabs" aria-label="Hauptbereiche">
+        <div class="tabs__list" role="tablist">
+          <button class="tab is-active" role="tab" id="tab-today"
+                  aria-controls="panel-today" aria-selected="true" data-tab="today">
+            <span class="tab__icon" aria-hidden="true">☀️</span>Heute
+          </button>
+          <button class="tab" role="tab" id="tab-wardrobe"
+                  aria-controls="panel-wardrobe" aria-selected="false" tabindex="-1" data-tab="wardrobe">
+            <span class="tab__icon" aria-hidden="true">🧥</span>Garderobe
+          </button>
+          <span class="tabs__pill" aria-hidden="true"></span>
+        </div>
+      </nav>
+    </header>
+
+    <main class="site-main">
+
+      <!-- ==================== Tab: Heute ==================== -->
+      <section class="panel is-active" id="panel-today" role="tabpanel" aria-labelledby="tab-today" tabindex="0">
+        <div class="panel__head fade-up">
+          <p class="eyebrow" id="today-date">Heute</p>
+          <h1 class="display">Dein Outfit für <em>heute</em></h1>
+        </div>
+
+        <!-- Wird ab Phase 4 von js/ui.js befüllt -->
+        <div id="today-outfit" class="fade-up fade-up--d1">
+          <div class="card card--placeholder empty-state">
+            <span class="empty-state__icon" aria-hidden="true">👔</span>
+            <h2 class="empty-state__title">Noch kein Vorschlag</h2>
+            <p class="empty-state__text">
+              Sobald deine Garderobe ein paar Teile enthält, stellen wir hier jeden Morgen
+              ein Outfit zusammen, das farblich und stilistisch zusammenpasst.
+            </p>
+            <button class="btn btn--primary" type="button" data-goto-tab="wardrobe">
+              Zur Garderobe
+            </button>
+          </div>
+        </div>
+
+        <!-- Wird ab Phase 4 befüllt -->
+        <section class="history fade-up fade-up--d2" id="today-history" hidden>
+          <h2 class="section-title">Die letzten Tage</h2>
+          <div class="history__strip" id="history-strip"></div>
+        </section>
+      </section>
+
+      <!-- ==================== Tab: Garderobe ==================== -->
+      <section class="panel" id="panel-wardrobe" role="tabpanel" aria-labelledby="tab-wardrobe" tabindex="0" hidden>
+        <div class="panel__head fade-up">
+          <p class="eyebrow">Deine Sammlung</p>
+          <h1 class="display">Die <em>Garderobe</em></h1>
+          <p class="panel__lead">
+            Lege jedes Kleidungsstück mit Farbe, Muster und Anlass an –
+            daraus komponieren wir deine Outfits.
+          </p>
+        </div>
+
+        <div class="wardrobe__toolbar fade-up fade-up--d1">
+          <div class="filter-chips" id="wardrobe-filters" role="group" aria-label="Nach Kategorie filtern">
+            <button class="chip is-active" type="button" data-filter="all">Alle</button>
+            <button class="chip" type="button" data-filter="top">Oberteile</button>
+            <button class="chip" type="button" data-filter="bottom">Unterteile</button>
+            <button class="chip" type="button" data-filter="dress">Kleider</button>
+            <button class="chip" type="button" data-filter="outer">Jacken</button>
+            <button class="chip" type="button" data-filter="shoes">Schuhe</button>
+            <button class="chip" type="button" data-filter="accessory">Accessoires</button>
+          </div>
+          <p class="wardrobe__count" id="wardrobe-count">0 Teile</p>
+        </div>
+
+        <!-- Wird ab Phase 2 von js/ui.js befüllt -->
+        <div class="wardrobe-grid fade-up fade-up--d2" id="wardrobe-grid"></div>
+
+        <div class="card card--placeholder empty-state fade-up fade-up--d2" id="wardrobe-empty">
+          <span class="empty-state__icon" aria-hidden="true">🧺</span>
+          <h2 class="empty-state__title">Deine Garderobe ist noch leer</h2>
+          <p class="empty-state__text">
+            Füge dein erstes Kleidungsstück hinzu – oder starte mit einer kuratierten
+            Beispiel-Garderobe im Preppy-Stil.
+          </p>
+          <div class="empty-state__actions">
+            <button class="btn btn--primary" type="button" id="btn-add-first">Teil hinzufügen</button>
+            <button class="btn btn--ghost" type="button" id="btn-load-seed">Beispiel-Garderobe laden</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <p>Alles bleibt lokal auf deinem Gerät. <span aria-hidden="true">·</span> Kein Konto, keine Cloud.</p>
+    </footer>
+  </div>
+
+  <!-- Schwebender Aktions-Button (ab Phase 2 aktiv) -->
+  <button class="fab" type="button" id="btn-add-garment" hidden>
+    <span class="fab__plus" aria-hidden="true">+</span>
+    <span class="fab__label">Teil hinzufügen</span>
+  </button>
+
+  <!-- ==================== Dialog (ab Phase 2 verdrahtet) ==================== -->
+  <dialog class="modal" id="garment-dialog" aria-labelledby="garment-dialog-title">
+    <form method="dialog" class="modal__form" id="garment-form">
+      <header class="modal__head">
+        <h2 class="modal__title" id="garment-dialog-title">Neues Kleidungsstück</h2>
+        <button class="icon-btn" type="button" id="btn-close-dialog" aria-label="Dialog schließen">✕</button>
+      </header>
+      <div class="modal__body" id="garment-form-body">
+        <!-- Felder folgen in Phase 2 -->
+      </div>
+      <footer class="modal__foot">
+        <button class="btn btn--ghost" type="button" id="btn-cancel-dialog">Abbrechen</button>
+        <button class="btn btn--primary" type="submit">Speichern</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

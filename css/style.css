@@ -1,0 +1,602 @@
+/* ==========================================================================
+   OOTD – Design-System
+   Klassische Ivy-League-Farbwelt + Serifen-Display, verspielte Formen
+   und Micro-Animationen in Layout und Interaktion.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Farben */
+  --cream:    #F7F3EB;
+  --ivory:    #FFFDF7;
+  --ink:      #1F2A24;
+  --forest:   #2E4B3C;
+  --camel:    #C19A6B;
+  --burgundy: #7A2E2E;
+  --navy:     #22334E;
+  --gold:     #B08D3E;
+  --blush:    #E8D5C4;
+
+  /* Abgeleitete Töne */
+  --ink-soft:    #55605A;
+  --ink-faint:   #8A938E;
+  --forest-deep: #233A2E;
+  --line:        #E2D9C9;
+  --line-strong: #CFC2AB;
+
+  /* Typografie */
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-ui: "Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Radien – weich und "sticker-haft" */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+
+  /* Schatten */
+  --shadow-sm: 0 2px 6px rgba(31, 42, 36, .06);
+  --shadow-md: 0 8px 22px rgba(31, 42, 36, .09);
+  --shadow-lg: 0 18px 44px rgba(31, 42, 36, .14);
+
+  /* Maße */
+  --page-max: 1080px;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+
+  /* Bewegung */
+  --ease-out: cubic-bezier(.22, .8, .3, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset & Grundlagen
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  background-color: var(--cream);
+  /* Dezentes Argyle-Raster über feinen Nadelstreifen */
+  background-image:
+    repeating-linear-gradient(45deg,  rgba(46, 75, 60, .035) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(-45deg, rgba(46, 75, 60, .035) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg,  rgba(176, 141, 62, .045) 0 1px, transparent 1px 9px);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Muss die display-Werte der Komponenten überschreiben (z. B. .fab). */
+[hidden] { display: none !important; }
+
+h1, h2, h3 { margin: 0; line-height: 1.18; font-weight: 600; }
+p { margin: 0; }
+img, svg { max-width: 100%; }
+
+:where(a) { color: var(--forest); text-decoration-color: var(--camel); text-underline-offset: 3px; }
+
+:focus-visible {
+  outline: 2.5px solid var(--forest);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.page {
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------------------------------
+   3. Typografie-Bausteine
+   -------------------------------------------------------------------------- */
+.display {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6.5vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: -.01em;
+  color: var(--forest-deep);
+}
+.display em {
+  font-style: italic;
+  color: var(--burgundy);
+}
+
+.eyebrow {
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--camel);
+  margin-bottom: .4rem;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--forest-deep);
+  margin-bottom: .9rem;
+}
+
+/* --------------------------------------------------------------------------
+   4. Header & Marke
+   -------------------------------------------------------------------------- */
+.site-header {
+  padding-top: clamp(1.4rem, 4vw, 2.4rem);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .85rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand__crest {
+  width: 46px;
+  flex: none;
+  display: block;
+  filter: drop-shadow(0 3px 5px rgba(31, 42, 36, .16));
+  transition: transform .5s var(--ease-spring);
+}
+.brand:hover .brand__crest { transform: rotate(-5deg) scale(1.05); }
+
+.crest-shield { fill: var(--forest); }
+.crest-inner  { fill: none; stroke: var(--gold); stroke-width: 1.6; }
+.crest-band   { fill: var(--burgundy); }
+.crest-mono {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  fill: var(--cream);
+}
+.crest-year {
+  font-family: var(--font-ui);
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  fill: var(--cream);
+}
+
+.brand__words { display: flex; flex-direction: column; }
+.brand__title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--forest-deep);
+  line-height: 1;
+}
+.brand__tagline {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  letter-spacing: .02em;
+}
+
+/* Verspielte Deko-Sticker */
+.header-stickers { display: flex; gap: .35rem; }
+.sticker {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  font-size: 1.05rem;
+  background: var(--ivory);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-sm);
+  animation: bob 4.5s var(--ease-out) infinite;
+}
+.sticker--1 { transform: rotate(-8deg); }
+.sticker--2 { transform: rotate(4deg);  animation-delay: .6s; }
+.sticker--3 { transform: rotate(-3deg); animation-delay: 1.2s; }
+
+@keyframes bob {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -5px; }
+}
+
+/* --------------------------------------------------------------------------
+   5. Tabs
+   -------------------------------------------------------------------------- */
+.tabs { margin-top: clamp(1.2rem, 3vw, 1.8rem); }
+
+.tabs__list {
+  position: relative;
+  display: inline-flex;
+  gap: .25rem;
+  padding: .3rem;
+  background: rgba(255, 253, 247, .8);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(6px);
+}
+
+.tab {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .55rem 1.15rem;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color .25s var(--ease-out);
+}
+.tab:hover { color: var(--forest); }
+.tab.is-active { color: var(--ivory); }
+.tab__icon { font-size: .95em; }
+
+/* Gleitende Pille hinter dem aktiven Tab */
+.tabs__pill {
+  position: absolute;
+  top: .3rem;
+  bottom: .3rem;
+  left: 0;
+  width: 0;
+  border-radius: var(--r-pill);
+  background: var(--forest);
+  box-shadow: 0 4px 12px rgba(46, 75, 60, .3);
+  transition: transform .45s var(--ease-spring), width .45s var(--ease-spring);
+}
+
+/* --------------------------------------------------------------------------
+   6. Panels
+   -------------------------------------------------------------------------- */
+.site-main { flex: 1; padding-block: clamp(1.8rem, 5vw, 3rem) 3rem; }
+
+.panel { display: none; }
+.panel.is-active { display: block; }
+.panel:focus { outline: none; }
+
+.panel__head { margin-bottom: clamp(1.4rem, 4vw, 2rem); }
+.panel__lead {
+  margin-top: .7rem;
+  max-width: 46ch;
+  color: var(--ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   7. Karten – Etiketten-Look mit doppeltem Rahmen
+   -------------------------------------------------------------------------- */
+.card {
+  position: relative;
+  background: var(--ivory);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-xl);
+  padding: clamp(1.4rem, 4vw, 2.2rem);
+  box-shadow: var(--shadow-md);
+}
+/* Innerer Goldrahmen wie auf einem Kleideretikett */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(176, 141, 62, .38);
+  border-radius: calc(var(--r-xl) - 7px);
+  pointer-events: none;
+}
+
+.card--placeholder {
+  background:
+    linear-gradient(var(--ivory), var(--ivory)) padding-box,
+    repeating-linear-gradient(45deg, rgba(176,141,62,.07) 0 6px, transparent 6px 12px) padding-box;
+}
+
+/* --------------------------------------------------------------------------
+   8. Buttons
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .7rem 1.4rem;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  font-family: var(--font-ui);
+  font-size: .95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .2s var(--ease-spring), box-shadow .25s var(--ease-out),
+              background-color .25s var(--ease-out), color .25s var(--ease-out);
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+
+.btn--primary {
+  background: var(--forest);
+  color: var(--ivory);
+  box-shadow: 0 5px 14px rgba(46, 75, 60, .28);
+}
+.btn--primary:hover { background: var(--forest-deep); box-shadow: 0 9px 20px rgba(46, 75, 60, .34); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--forest);
+  border-color: var(--line-strong);
+}
+.btn--ghost:hover { background: var(--blush); border-color: var(--camel); }
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--ivory);
+  color: var(--ink-soft);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color .2s var(--ease-out), color .2s var(--ease-out),
+              transform .2s var(--ease-spring);
+}
+.icon-btn:hover { background: var(--blush); color: var(--burgundy); transform: scale(1.08); }
+
+/* Chips (Filter, Auswahl) */
+.chip {
+  padding: .42rem 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  background: var(--ivory);
+  font-family: var(--font-ui);
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all .22s var(--ease-out);
+}
+.chip:hover { border-color: var(--camel); color: var(--forest); transform: translateY(-1px); }
+.chip.is-active {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: var(--ivory);
+  box-shadow: 0 4px 10px rgba(46, 75, 60, .24);
+}
+
+/* Schwebender Aktions-Button */
+.fab {
+  position: fixed;
+  right: clamp(1rem, 4vw, 2rem);
+  bottom: clamp(1rem, 4vw, 2rem);
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .85rem 1.5rem;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--burgundy);
+  color: var(--ivory);
+  font-family: var(--font-ui);
+  font-size: .95rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: transform .25s var(--ease-spring), box-shadow .25s var(--ease-out);
+}
+.fab:hover { transform: translateY(-3px) scale(1.03); }
+.fab__plus { font-size: 1.3rem; line-height: 1; }
+
+/* --------------------------------------------------------------------------
+   9. Garderobe
+   -------------------------------------------------------------------------- */
+.wardrobe__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.6rem;
+}
+
+.filter-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+.wardrobe__count {
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.wardrobe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: clamp(.9rem, 2.5vw, 1.3rem);
+}
+.wardrobe-grid:empty { display: none; }
+
+/* --------------------------------------------------------------------------
+   10. Empty-States
+   -------------------------------------------------------------------------- */
+.empty-state { text-align: center; }
+.empty-state__icon {
+  display: block;
+  font-size: 2.6rem;
+  margin-bottom: .6rem;
+  animation: bob 5s var(--ease-out) infinite;
+}
+.empty-state__title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  color: var(--forest-deep);
+  margin-bottom: .5rem;
+}
+.empty-state__text {
+  max-width: 42ch;
+  margin-inline: auto;
+  color: var(--ink-soft);
+  margin-bottom: 1.3rem;
+}
+.empty-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   11. History-Leiste
+   -------------------------------------------------------------------------- */
+.history { margin-top: clamp(2rem, 5vw, 3rem); }
+.history__strip { display: flex; flex-wrap: wrap; gap: .7rem; }
+
+/* --------------------------------------------------------------------------
+   12. Modal
+   -------------------------------------------------------------------------- */
+.modal {
+  width: min(560px, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-xl);
+  background: var(--ivory);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+}
+.modal::backdrop {
+  background: rgba(31, 42, 36, .42);
+  backdrop-filter: blur(3px);
+}
+.modal[open] { animation: modal-in .35s var(--ease-spring); }
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(14px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+.modal__form { display: flex; flex-direction: column; max-height: min(84vh, 780px); }
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 1.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.modal__title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  color: var(--forest-deep);
+}
+
+.modal__body { padding: 1.4rem; overflow-y: auto; }
+
+.modal__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: .7rem;
+  padding: 1.1rem 1.4rem;
+  border-top: 1px solid var(--line);
+  background: rgba(232, 213, 196, .28);
+}
+
+/* --------------------------------------------------------------------------
+   13. Toasts
+   -------------------------------------------------------------------------- */
+.toast-stack {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(1rem, 5vw, 2rem);
+  z-index: 60;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  align-items: center;
+  pointer-events: none;
+}
+.toast {
+  padding: .7rem 1.2rem;
+  border-radius: var(--r-pill);
+  background: var(--forest-deep);
+  color: var(--ivory);
+  font-size: .9rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-lg);
+  animation: toast-in .35s var(--ease-spring);
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* --------------------------------------------------------------------------
+   14. Footer
+   -------------------------------------------------------------------------- */
+.site-footer {
+  padding-block: 1.6rem 2.2rem;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: .82rem;
+  color: var(--ink-faint);
+}
+
+/* --------------------------------------------------------------------------
+   15. Einblend-Animationen
+   -------------------------------------------------------------------------- */
+.fade-up {
+  animation: fade-up .6s var(--ease-out) both;
+}
+.fade-up--d1 { animation-delay: .09s; }
+.fade-up--d2 { animation-delay: .18s; }
+.fade-up--d3 { animation-delay: .27s; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* --------------------------------------------------------------------------
+   16. Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 560px) {
+  .header-stickers { display: none; }
+  .tabs__list { display: flex; width: 100%; }
+  .tab { flex: 1; justify-content: center; padding-inline: .6rem; }
+  .fab__label { display: none; }
+  .fab { padding: 1rem; }
+  .fab__plus { font-size: 1.5rem; }
+}
+
+/* --------------------------------------------------------------------------
+   17. Bewegung reduzieren
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
