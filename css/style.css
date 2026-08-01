@@ -20,7 +20,10 @@
   --blush:    #E8D5C4;
 
   --ink-soft:    #55605A;
-  --ink-faint:   #7C857F;
+  /* Kontrastgeprüft: >= 4.5:1 auf Creme und Ivory (WCAG AA, Kleintext). */
+  --ink-faint:   #69706B;
+  /* Textvariante von --camel; das helle Camel erreicht als Schrift nur 2,3:1. */
+  --camel-ink:   #8C673B;
   --forest-deep: #233A2E;
   --line:        #E2D9C9;
   --line-strong: #CFC2AB;
@@ -96,6 +99,22 @@ button, input, select { font: inherit; color: inherit; }
   border-radius: 6px;
 }
 
+/* Springt bei Tastaturbedienung als Erstes an und wird dabei sichtbar. */
+.skip-link {
+  position: fixed;
+  top: 0; left: 50%;
+  z-index: 100;
+  translate: -50% -120%;
+  padding: .7rem 1.3rem;
+  border-radius: 0 0 var(--r-md) var(--r-md);
+  background: var(--forest-deep);
+  color: var(--ivory);
+  font-weight: 700;
+  text-decoration: none;
+  transition: translate .25s var(--ease-out);
+}
+.skip-link:focus-visible { translate: -50% 0; }
+
 .visually-hidden {
   position: absolute;
   width: 1px; height: 1px;
@@ -131,7 +150,7 @@ button, input, select { font: inherit; color: inherit; }
   font-weight: 800;
   letter-spacing: .16em;
   text-transform: uppercase;
-  color: var(--camel);
+  color: var(--camel-ink);
   margin-bottom: .4rem;
 }
 
@@ -644,7 +663,9 @@ button, input, select { font: inherit; color: inherit; }
 /* Die Teile des Outfits nebeneinander */
 .outfit__rack {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  /* 78px lässt auf einem 360px-Display drei Teile nebeneinander zu,
+     sodass das Outfit als Ganzes ins Bild passt. */
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
   gap: .6rem;
   padding: .9rem .6rem;
   border-radius: var(--r-lg);
@@ -723,7 +744,7 @@ button, input, select { font: inherit; color: inherit; }
   font-weight: 800;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: var(--camel);
+  color: var(--camel-ink);
   margin-bottom: .3rem;
 }
 .outfit__reasons {
@@ -921,7 +942,7 @@ button, input, select { font: inherit; color: inherit; }
   font-weight: 700;
   letter-spacing: .02em;
   text-transform: none;
-  color: var(--camel);
+  color: var(--camel-ink);
 }
 
 .input {
@@ -1275,6 +1296,9 @@ select.input {
 @media (max-width: 400px) {
   .header-stickers { display: none; }
   .opt-row { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+  .piece__figure { height: 78px; }
+  .piece__name { font-size: .7rem; }
+  .outfit__rack { gap: .45rem; padding: .7rem .45rem; }
 }
 
 /* --------------------------------------------------------------------------

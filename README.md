@@ -18,7 +18,65 @@ Die App entsteht in fünf Phasen (siehe [BAUPLAN.md](BAUPLAN.md), §9):
 | 2 | Garderobe anlegen, bearbeiten, löschen | ✅ fertig |
 | 3 | Outfit-Engine mit Farbharmonie-Scoring | ✅ fertig |
 | 4 | Tab „Heute“: Vorschlag, Bewertung, Verlauf | ✅ fertig |
-| 5 | Feinschliff, Barrierefreiheit, Doku | offen |
+| 5 | Feinschliff, Barrierefreiheit, Doku | ✅ fertig |
+
+## Bedienung
+
+Die App hat zwei Bereiche, umschaltbar über die Leiste am unteren Bildrand.
+
+**Heute** zeigt den Vorschlag des Tages: die Silhouetten der ausgewählten Teile
+nebeneinander, jedes mit Farbpunkt, Name und – falls vorhanden – der
+Musterangabe. Darüber steht die Bewertung als ein bis fünf goldene Sterne mit
+Punktzahl, darunter in kursiver Serifenschrift ein bis zwei Sätze, warum die
+Kombination funktioniert. Zwei Knöpfe schließen die Karte ab: **Neu würfeln**
+zieht einen anderen Vorschlag aus derselben Garderobe, **Gefällt mir** merkt
+den Tag vor. Ganz unten läuft der Rückblick auf die letzten sieben Tage als
+Reihe kleiner Karten mit den Farben des jeweiligen Outfits und einem Herz bei
+gemerkten Tagen.
+
+Der Vorschlag ist an das Datum gekoppelt und übersteht ein Neuladen: Wer
+morgens würfelt, sieht abends dasselbe Outfit. Erst am nächsten Tag wechselt er.
+
+**Garderobe** listet alle Teile als Karten mit Silhouette, Kategorie und
+Anlass-Stufe; über die Chips lässt sich nach Kategorie filtern. Der Knopf
+unten rechts öffnet das Formular für ein neues Teil – mit Kategorie, Art,
+Farbe aus der Palette oder frei gewählt, Muster, Anlass und Wärme. Eine
+Vorschau zeigt dabei laufend, wie das Teil aussehen wird. Wer noch nichts
+angelegt hat, kann mit einem Klick eine kuratierte Beispiel-Garderobe aus
+24 Teilen laden.
+
+## Wie die Vorschläge entstehen
+
+Jedes Outfit bekommt eine Wertung von 0 bis 100 aus vier Teilen:
+
+| Anteil | Kriterium |
+|---|---|
+| 40 % | **Farbharmonie** – ideal ist eine neutrale Basis mit höchstens einem kräftigen Akzent. Mehrere Akzente werden danach beurteilt, wie sie im Farbkreis zueinander stehen. |
+| 20 % | **Musterdisziplin** – höchstens ein auffälliges Muster pro Outfit. |
+| 20 % | **Anlass** – die Teile dürfen höchstens eine Stufe auseinanderliegen. |
+| 20 % | **Preppy-Anteil** – wie nah die Teile am Kanon des Stils liegen. |
+
+Als neutral gilt dabei nicht, was rechnerisch wenig gesättigt ist, sondern was
+wenig *bunt* ist. Creme kommt auf eine HSL-Sättigung von 0,46 und wäre sonst
+ein Akzent – über die Buntheit (0,09) wird es korrekt als Basiston erkannt.
+Damit zählen auch Hellblau, Salbei, Navy und Racing Green zur Basis; ein
+hellblaues Oxford-Hemd zur Camel-Chino fällt so nicht als „zwei Akzente" durch.
+
+Gewürfelt wird nicht das strikte Maximum, sondern gleichverteilt aus der
+Spitzengruppe aller Kandidaten, die höchstens acht Punkte darunter liegen –
+sonst käme bei jedem Würfeln fast immer dasselbe Outfit heraus.
+
+## Barrierefreiheit
+
+- Alle Textfarben erreichen mindestens 4,5:1 Kontrast (WCAG AA, Kleintext);
+  die Werte sind rechnerisch geprüft, nicht geschätzt.
+- Vollständig mit der Tastatur bedienbar: Skip-Link als erster Tab-Stopp,
+  Pfeiltasten zwischen den Bereichen nach dem ARIA-Tabs-Muster, Dialoge mit
+  Fokusfang, ESC zum Schließen und Fokusrückgabe an den auslösenden Knopf.
+- Alle Tippziele sind mindestens 44 px groß.
+- Silhouetten sind als dekorativ ausgezeichnet, die Bewertung hat eine
+  Textalternative, Würfeln und Merken werden über eine Live-Region angesagt.
+- `prefers-reduced-motion` schaltet sämtliche Animationen ab.
 
 ## Lokal starten
 

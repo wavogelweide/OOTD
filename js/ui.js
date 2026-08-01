@@ -219,10 +219,8 @@ function renderHistory() {
   const today = dateKey();
   strip.innerHTML = entries.map((entry) => {
     // Zwischenzeitlich gelöschte Teile werden einfach übersprungen.
-    const colors = entry.outfitIds
-      .map((id) => getGarment(id))
-      .filter(Boolean)
-      .slice(0, 4)
+    const pieces = entry.outfitIds.map((id) => getGarment(id)).filter(Boolean);
+    const colors = pieces.slice(0, 4)
       .map((g) => `<span class="day__dot" style="--swatch:${g.color}"></span>`)
       .join('');
     const date = parseDateKey(entry.date);
@@ -230,10 +228,13 @@ function renderHistory() {
       ? 'Heute'
       : date.toLocaleDateString('de-DE', { weekday: 'short' });
     const full = date.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+    const spoken = `${full}: ${pieces.map((p) => p.name).join(', ') || 'keine Teile mehr vorhanden'}`
+      + (entry.liked ? ' – gemerkt' : '');
 
     return `
-      <div class="day${entry.date === today ? ' is-today' : ''}" title="${full}">
-        <span class="day__label">${label}</span>
+      <div class="day${entry.date === today ? ' is-today' : ''}" role="listitem"
+           title="${escapeHtml(full)}" aria-label="${escapeHtml(spoken)}">
+        <span class="day__label" aria-hidden="true">${label}</span>
         <span class="day__dots" aria-hidden="true">${colors}</span>
         <span class="day__heart${entry.liked ? ' is-on' : ''}" aria-hidden="true">${entry.liked ? '♥' : ''}</span>
       </div>`;
@@ -285,6 +286,11 @@ function rerollToday() {
   const entry = getHistoryEntry(today);
   saveHistoryEntry({ date: today, salt: (entry?.salt ?? 0) + 1, outfitIds: [], liked: null });
   renderToday({ rolled: true });
+  // Der Kartentausch ist rein visuell – für Screenreader hörbar machen.
+  const names = getHistoryEntry(today)?.outfitIds.map((id) => getGarment(id)?.name).filter(Boolean);
+  toast(names?.length ? `Neuer Vorschlag: ${names.join(', ')}` : 'Neuer Vorschlag gewürfelt');
+  // Der Fokus liegt sonst auf einem Knopf, der gerade ersetzt wurde.
+  el('btn-reroll')?.focus();
 }
 
 function toggleLike() {
@@ -293,6 +299,7 @@ function toggleLike() {
   const liked = !(entry?.liked === true);
   saveHistoryEntry({ date: today, liked });
   renderToday();
+  el('btn-like')?.focus();
   toast(liked ? 'Gemerkt – schön, dass es gefällt' : 'Merkung entfernt');
 }
 

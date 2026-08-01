@@ -18,6 +18,8 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎾</text></svg>">
 </head>
 <body>
+  <a class="skip-link" href="#panel-today">Zum Inhalt springen</a>
+
   <div class="page">
 
     <!-- ==================== Header ==================== -->
@@ -73,8 +75,8 @@
 
         <!-- Wird ab Phase 4 befüllt -->
         <section class="history fade-up fade-up--d2" id="today-history" hidden>
-          <h2 class="section-title">Die letzten Tage</h2>
-          <div class="history__strip" id="history-strip"></div>
+          <h2 class="section-title" id="history-title">Die letzten Tage</h2>
+          <div class="history__strip" id="history-strip" role="list" aria-labelledby="history-title"></div>
         </section>
       </section>
 
@@ -183,6 +185,7 @@
             <label class="field__label" for="g-subtype">Art</label>
             <select class="input" id="g-subtype"></select>
             <input class="input input--tight" type="text" id="g-subtype-custom"
+                   aria-label="Eigene Bezeichnung der Art"
                    placeholder="Eigene Bezeichnung" maxlength="40" autocomplete="off" hidden>
           </div>
 
