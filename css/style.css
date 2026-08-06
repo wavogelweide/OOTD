@@ -178,8 +178,13 @@ button, input, select { font: inherit; color: inherit; }
   display: inline-flex;
   align-items: center;
   gap: .75rem;
-  text-decoration: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
   color: inherit;
+  cursor: pointer;
 }
 
 .brand__crest {

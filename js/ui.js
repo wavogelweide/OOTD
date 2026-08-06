@@ -171,6 +171,14 @@ function todayEmptyMarkup(missing, wardrobeEmpty) {
     </div>`;
 }
 
+/** Anzeigereihenfolge im Rack – von oben nach unten statt in Ziehreihenfolge. */
+const RACK_ORDER = ['top', 'outer', 'bottom', 'shoes', 'accessory'];
+
+function sortedForRack(items) {
+  return [...items].sort((a, b) =>
+    RACK_ORDER.indexOf(a.category) - RACK_ORDER.indexOf(b.category));
+}
+
 function outfitMarkup(result, liked) {
   return `
     <article class="card outfit">
@@ -180,7 +188,7 @@ function outfitMarkup(result, liked) {
       </header>
 
       <div class="outfit__rack" id="outfit-rack">
-        ${result.items.map(outfitPiece).join('')}
+        ${sortedForRack(result.items).map(outfitPiece).join('')}
       </div>
 
       <div class="outfit__why">
@@ -206,8 +214,12 @@ function renderHistory() {
   const strip = el('history-strip');
   if (!section || !strip) return;
 
+  // Nach den noch vorhandenen Teilen filtern, nicht nach den gespeicherten
+  // IDs: Wird eine Garderobe leergeraeumt, blieben sonst leere Tageskarten
+  // stehen, bis die Seite neu geladen wird.
   const entries = getHistory()
-    .filter((entry) => Array.isArray(entry.outfitIds) && entry.outfitIds.length > 0)
+    .map((entry) => ({ entry, pieces: (entry.outfitIds || []).map((id) => getGarment(id)).filter(Boolean) }))
+    .filter(({ pieces }) => pieces.length > 0)
     .slice(-7)
     .reverse();
 
@@ -217,9 +229,7 @@ function renderHistory() {
   }
 
   const today = dateKey();
-  strip.innerHTML = entries.map((entry) => {
-    // Zwischenzeitlich gelöschte Teile werden einfach übersprungen.
-    const pieces = entry.outfitIds.map((id) => getGarment(id)).filter(Boolean);
+  strip.innerHTML = entries.map(({ entry, pieces }) => {
     const colors = pieces.slice(0, 4)
       .map((g) => `<span class="day__dot" style="--swatch:${g.color}"></span>`)
       .join('');
@@ -466,10 +476,7 @@ function closeDialog() {
   document.body.classList.remove('has-modal');
 }
 
-function saveFromForm() {
-  const data = readForm();
-  if (!data.name) return;
-
+function saveFromForm(data) {
   if (editingId) {
     updateGarment(editingId, data);
     toast('Änderungen gesichert');
@@ -535,6 +542,7 @@ export function initUI() {
     updatePreview();
   });
   dom.form.addEventListener('input', (event) => {
+    if (event.target === dom.name) dom.name.setCustomValidity('');
     if (event.target === dom.colorCustom) selectColor('color', dom.colorCustom.value, dom.colorCustom);
     if (event.target === dom.patternColorCustom) {
       selectColor('patternColor', dom.patternColorCustom.value, dom.patternColorCustom);
@@ -542,8 +550,17 @@ export function initUI() {
     updatePreview();
   });
 
-  dom.form.addEventListener('submit', () => {
-    saveFromForm();
+  dom.form.addEventListener('submit', (event) => {
+    const data = readForm();
+    if (!data.name) {
+      // required allein laesst reine Leerzeichen durch; ohne diese Pruefung
+      // schloesse sich der Dialog und die Eingabe waere verloren.
+      event.preventDefault();
+      dom.name.setCustomValidity('Bitte gib dem Teil einen Namen.');
+      dom.name.reportValidity();
+      return;
+    }
+    saveFromForm(data);
     document.body.classList.remove('has-modal');
   });
   dom.dialog.addEventListener('cancel', () => document.body.classList.remove('has-modal'));

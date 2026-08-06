@@ -186,8 +186,13 @@ button, input, select { font: inherit; color: inherit; }
   display: inline-flex;
   align-items: center;
   gap: .75rem;
-  text-decoration: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
   color: inherit;
+  cursor: pointer;
 }
 
 .brand__crest {
@@ -1330,7 +1335,7 @@ select.input {
     <!-- ==================== Header ==================== -->
     <header class="site-header">
       <div class="site-header__inner">
-        <a class="brand" href="#" aria-label="OOTD – Startseite">
+        <button class="brand" type="button" data-goto-tab="today" aria-label="Zum Tagesvorschlag">
           <span class="brand__crest" aria-hidden="true">
             <svg viewBox="0 0 64 76" role="presentation" focusable="false">
               <path class="crest-shield" d="M32 2 L60 11 V38 C60 56 47 68 32 74 C17 68 4 56 4 38 V11 Z"/>
@@ -1344,7 +1349,7 @@ select.input {
             <span class="brand__title">OOTD</span>
             <span class="brand__tagline">Dein täglicher Stilbegleiter</span>
           </span>
-        </a>
+        </button>
 
         <p class="header-stickers" aria-hidden="true">
           <span class="sticker sticker--1">🎾</span>
@@ -1594,17 +1599,6 @@ function rgbToHsl({ r, g, b }) {
 
 function hexToHsl(hex) {
   return rgbToHsl(hexToRgb(hex));
-}
-
-function hslToHex({ h, s, l }) {
-  const c = (1 - Math.abs(2 * l - 1)) * s;
-  const hp = (((h % 360) + 360) % 360) / 60;
-  const x = c * (1 - Math.abs((hp % 2) - 1));
-  const [r1, g1, b1] =
-    hp < 1 ? [c, x, 0] : hp < 2 ? [x, c, 0] : hp < 3 ? [0, c, x] :
-    hp < 4 ? [0, x, c] : hp < 5 ? [x, 0, c] : [c, 0, x];
-  const m = l - c / 2;
-  return rgbToHex({ r: (r1 + m) * 255, g: (g1 + m) * 255, b: (b1 + m) * 255 });
 }
 
 /** Relative Helligkeit nach WCAG, 0 (schwarz) bis 1 (weiß). */
@@ -2155,6 +2149,16 @@ function isPersistent() {
   return storageAvailable;
 }
 
+/**
+ * Farbwerte landen als Attributwerte im erzeugten Markup. Sie stammen zwar
+ * nur aus dem Farbwaehler und den Presets, werden hier aber zentral geprueft,
+ * damit veraenderte Daten im localStorage keinen Weg ins Markup finden.
+ */
+const HEX = /^#[0-9a-f]{6}$/i;
+function safeHex(value, fallback) {
+  return HEX.test(String(value)) ? String(value) : fallback;
+}
+
 function newId() {
   return `g_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -2167,10 +2171,10 @@ function normalize(data, id) {
     name: String(data.name || '').trim(),
     category: data.category,
     subtype: String(data.subtype || '').trim(),
-    color: data.color,
-    colorName: data.colorName || colorNameFor(data.color),
+    color: safeHex(data.color, '#8C8C88'),
+    colorName: data.colorName || colorNameFor(safeHex(data.color, '#8C8C88')),
     pattern,
-    patternColor: pattern === 'solid' ? null : (data.patternColor || '#FFFDF7'),
+    patternColor: pattern === 'solid' ? null : safeHex(data.patternColor, '#FFFDF7'),
     formality: Number(data.formality) || 2,
     warmth: Number(data.warmth) || 2,
   };
@@ -2898,6 +2902,14 @@ function todayEmptyMarkup(missing, wardrobeEmpty) {
     </div>`;
 }
 
+/** Anzeigereihenfolge im Rack – von oben nach unten statt in Ziehreihenfolge. */
+const RACK_ORDER = ['top', 'outer', 'bottom', 'shoes', 'accessory'];
+
+function sortedForRack(items) {
+  return [...items].sort((a, b) =>
+    RACK_ORDER.indexOf(a.category) - RACK_ORDER.indexOf(b.category));
+}
+
 function outfitMarkup(result, liked) {
   return `
     <article class="card outfit">
@@ -2907,7 +2919,7 @@ function outfitMarkup(result, liked) {
       </header>
 
       <div class="outfit__rack" id="outfit-rack">
-        ${result.items.map(outfitPiece).join('')}
+        ${sortedForRack(result.items).map(outfitPiece).join('')}
       </div>
 
       <div class="outfit__why">
@@ -2933,8 +2945,12 @@ function renderHistory() {
   const strip = el('history-strip');
   if (!section || !strip) return;
 
+  // Nach den noch vorhandenen Teilen filtern, nicht nach den gespeicherten
+  // IDs: Wird eine Garderobe leergeraeumt, blieben sonst leere Tageskarten
+  // stehen, bis die Seite neu geladen wird.
   const entries = getHistory()
-    .filter((entry) => Array.isArray(entry.outfitIds) && entry.outfitIds.length > 0)
+    .map((entry) => ({ entry, pieces: (entry.outfitIds || []).map((id) => getGarment(id)).filter(Boolean) }))
+    .filter(({ pieces }) => pieces.length > 0)
     .slice(-7)
     .reverse();
 
@@ -2944,9 +2960,7 @@ function renderHistory() {
   }
 
   const today = dateKey();
-  strip.innerHTML = entries.map((entry) => {
-    // Zwischenzeitlich gelöschte Teile werden einfach übersprungen.
-    const pieces = entry.outfitIds.map((id) => getGarment(id)).filter(Boolean);
+  strip.innerHTML = entries.map(({ entry, pieces }) => {
     const colors = pieces.slice(0, 4)
       .map((g) => `<span class="day__dot" style="--swatch:${g.color}"></span>`)
       .join('');
@@ -3193,10 +3207,7 @@ function closeDialog() {
   document.body.classList.remove('has-modal');
 }
 
-function saveFromForm() {
-  const data = readForm();
-  if (!data.name) return;
-
+function saveFromForm(data) {
   if (editingId) {
     updateGarment(editingId, data);
     toast('Änderungen gesichert');
@@ -3262,6 +3273,7 @@ function initUI() {
     updatePreview();
   });
   dom.form.addEventListener('input', (event) => {
+    if (event.target === dom.name) dom.name.setCustomValidity('');
     if (event.target === dom.colorCustom) selectColor('color', dom.colorCustom.value, dom.colorCustom);
     if (event.target === dom.patternColorCustom) {
       selectColor('patternColor', dom.patternColorCustom.value, dom.patternColorCustom);
@@ -3269,8 +3281,17 @@ function initUI() {
     updatePreview();
   });
 
-  dom.form.addEventListener('submit', () => {
-    saveFromForm();
+  dom.form.addEventListener('submit', (event) => {
+    const data = readForm();
+    if (!data.name) {
+      // required allein laesst reine Leerzeichen durch; ohne diese Pruefung
+      // schloesse sich der Dialog und die Eingabe waere verloren.
+      event.preventDefault();
+      dom.name.setCustomValidity('Bitte gib dem Teil einen Namen.');
+      dom.name.reportValidity();
+      return;
+    }
+    saveFromForm(data);
     document.body.classList.remove('has-modal');
   });
   dom.dialog.addEventListener('cancel', () => document.body.classList.remove('has-modal'));

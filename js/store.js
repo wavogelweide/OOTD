@@ -67,6 +67,16 @@ export function isPersistent() {
   return storageAvailable;
 }
 
+/**
+ * Farbwerte landen als Attributwerte im erzeugten Markup. Sie stammen zwar
+ * nur aus dem Farbwaehler und den Presets, werden hier aber zentral geprueft,
+ * damit veraenderte Daten im localStorage keinen Weg ins Markup finden.
+ */
+const HEX = /^#[0-9a-f]{6}$/i;
+function safeHex(value, fallback) {
+  return HEX.test(String(value)) ? String(value) : fallback;
+}
+
 function newId() {
   return `g_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -79,10 +89,10 @@ function normalize(data, id) {
     name: String(data.name || '').trim(),
     category: data.category,
     subtype: String(data.subtype || '').trim(),
-    color: data.color,
-    colorName: data.colorName || colorNameFor(data.color),
+    color: safeHex(data.color, '#8C8C88'),
+    colorName: data.colorName || colorNameFor(safeHex(data.color, '#8C8C88')),
     pattern,
-    patternColor: pattern === 'solid' ? null : (data.patternColor || '#FFFDF7'),
+    patternColor: pattern === 'solid' ? null : safeHex(data.patternColor, '#FFFDF7'),
     formality: Number(data.formality) || 2,
     warmth: Number(data.warmth) || 2,
   };

@@ -38,17 +38,6 @@ export function hexToHsl(hex) {
   return rgbToHsl(hexToRgb(hex));
 }
 
-export function hslToHex({ h, s, l }) {
-  const c = (1 - Math.abs(2 * l - 1)) * s;
-  const hp = (((h % 360) + 360) % 360) / 60;
-  const x = c * (1 - Math.abs((hp % 2) - 1));
-  const [r1, g1, b1] =
-    hp < 1 ? [c, x, 0] : hp < 2 ? [x, c, 0] : hp < 3 ? [0, c, x] :
-    hp < 4 ? [0, x, c] : hp < 5 ? [x, 0, c] : [c, 0, x];
-  const m = l - c / 2;
-  return rgbToHex({ r: (r1 + m) * 255, g: (g1 + m) * 255, b: (b1 + m) * 255 });
-}
-
 /** Relative Helligkeit nach WCAG, 0 (schwarz) bis 1 (weiß). */
 export function luminance(hex) {
   const { r, g, b } = hexToRgb(hex);
